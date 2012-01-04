@@ -66,9 +66,10 @@ public class ChatPanel extends SplitLayoutPanel
         dockLayoutPanel.add(m_input);
 
         m_chatArea = new TextArea();
-        m_chatArea.setStyleName("chatBox");
+        m_chatArea.addStyleName("chatBox");
         m_chatArea.setReadOnly(true);
         m_chatArea.setText("o hai");
+        m_chatArea.removeStyleDependentName("readonly");
         add(m_chatArea);
     }
 
