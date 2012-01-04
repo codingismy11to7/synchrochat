@@ -3,7 +3,7 @@ package com.progoth.synchrochat.client;
 import java.util.Set;
 
 import no.eirikb.gwtchannelapi.client.Channel;
-import no.eirikb.gwtchannelapi.client.ChannelListener;
+import no.eirikb.gwtchannelapi.client.ChannelListenerAdapter;
 import no.eirikb.gwtchannelapi.client.Message;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -186,7 +186,7 @@ public class Synchrochat implements EntryPoint
                         create();
 
                         m_channel = new Channel(m_loginInfo.getChannelKey());
-                        m_channel.addChannelListener(new ChannelListener()
+                        m_channel.addChannelListener(new ChannelListenerAdapter()
                         {
                             @Override
                             public void onReceive(final Message aMessage)

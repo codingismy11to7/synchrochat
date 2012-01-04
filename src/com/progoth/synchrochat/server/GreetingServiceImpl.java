@@ -1,9 +1,11 @@
 package com.progoth.synchrochat.server;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import no.eirikb.gwtchannelapi.server.ChannelServer;
 
@@ -24,24 +26,24 @@ import com.progoth.synchrochat.shared.FieldVerifier;
  */
 public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService
 {
-
-    /**
-     * 
-     */
     private static final long serialVersionUID = 8471232977034188023L;
-    private static final Map<String, Set<String>> sm_rooms = new HashMap<String, Set<String>>();
+
+    private static final SortedMap<String, Set<String>> sm_rooms = Collections
+        .synchronizedSortedMap(new TreeMap<String, Set<String>>());
 
     @Override
     public Set<String> getRoomList()
     {
-        return new HashSet<String>(sm_rooms.keySet());
+        synchronized (sm_rooms)
+        {
+            return new TreeSet<String>(sm_rooms.keySet());
+        }
     }
 
     private User getUser()
     {
         final UserService userService = UserServiceFactory.getUserService();
-        final User user = userService.getCurrentUser();
-        return user;
+        return userService.getCurrentUser();
     }
 
     @Override
@@ -109,12 +111,15 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
         final String userId = user.getUserId();
         // String key = ChannelServiceFactory.getChannelService().createChannel(userId);
         // if (key == null) throw new RuntimeException("null key!");
-        if (!sm_rooms.containsKey(aName))
+        synchronized (sm_rooms)
         {
-            sm_rooms.put(aName, new HashSet<String>());
+            if (!sm_rooms.containsKey(aName))
+            {
+                sm_rooms.put(aName, new HashSet<String>());
+            }
+            sm_rooms.get(aName).add(userId);
+            // return key;
+            return getRoomList();
         }
-        sm_rooms.get(aName).add(userId);
-        // return key;
-        return getRoomList();
     }
 }

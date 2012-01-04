@@ -3,12 +3,17 @@
   <application>synchrochat</application>
   <version>1</version>
 
+<!--   <inbound-services> -->
+<!--     <service>channel_presence</service> -->
+<!--   </inbound-services> -->
+
   <!--
     By default, App Engine sends requests serially to a given web server.
     To allow App Engine to send multiple requests in parallel specify:
 
       <threadsafe>true</threadsafe>
   -->
+  <threadsafe>true</threadsafe>
 
   <!-- Configure serving/caching of GWT files -->
   <static-files>
