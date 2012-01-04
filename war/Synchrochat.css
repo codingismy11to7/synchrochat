@@ -21,3 +21,8 @@ body {
 #closeButton {
   margin: 15px 6px 6px;
 }
+
+.chatBox {
+	font-family: monospace;
+	font-size: larger;
+}
