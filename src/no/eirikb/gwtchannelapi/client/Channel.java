@@ -35,83 +35,108 @@ import com.google.gwt.user.client.rpc.SerializationStreamFactory;
  * @author Eirik Brandtzæg <eirikb@eirikb.no>
  * 
  */
-public class Channel {
-	private List<ChannelListener> channelListeners;
-	private String channelKey;
+public class Channel
+{
+    private final List<ChannelListener> m_channelListeners;
+    private final String m_channelKey;
 
-	/**
-	 * 
-	 * @param channelKey
-	 *            key of the channel. This key is the key you get from
-	 *            ChannelServiceFactory
-	 *            .getChannelService().createChannel(String) on server side
-	 */
-	public Channel(String channelKey) {
-		this.channelKey = channelKey;
-		channelListeners = new ArrayList<ChannelListener>();
-	}
+    /**
+     * 
+     * @param aChannelKey
+     *            key of the channel. This key is the key you get from ChannelServiceFactory
+     *            .getChannelService().createChannel(String) on server side
+     */
+    public Channel(final String aChannelKey)
+    {
+        m_channelKey = aChannelKey;
+        m_channelListeners = new ArrayList<ChannelListener>();
+    }
 
-	private void onMessage(String encoded) {
-		SerializationStreamFactory ssf = GWT.create(ChannelService.class);
-		try {
-			Message message = (Message) ssf.createStreamReader(encoded)
-					.readObject();
-			for (int i = 0; i < channelListeners.size(); i++) {
-				channelListeners.get(i).onReceive(message);
-			}
-		} catch (SerializationException e) {
-			e.printStackTrace();
+    /**
+     * Add a ChannelListener that will respond on events
+     * 
+     * @param channelListener
+     */
+    public void addChannelListener(final ChannelListener channelListener)
+    {
+        m_channelListeners.add(channelListener);
+    }
+
+    /**
+     * Join the channel
+     */
+    public void join()
+    {
+        join(m_channelKey);
+    }
+
+    private native void join(String channelKey) /*-{
+		var c = new $wnd.goog.appengine.Channel(channelKey);
+		var socket = c.open();
+		var me = this;
+		socket.onmessage = function(evt) {
+			var s = evt.data;
+			me.@no.eirikb.gwtchannelapi.client.Channel::onMessage(Ljava/lang/String;)(s);
 		}
-	}
-    private void onOpen() {
-        for (ChannelListener list : channelListeners)
-            list.onOpen();
-    }
-    private void onClose(Object evt) {
-        for (ChannelListener list : channelListeners)
+		socket.onopen = function() {
+			me.@no.eirikb.gwtchannelapi.client.Channel::onOpen();
+		}
+		socket.onclose = function(evt) {
+			me.@no.eirikb.gwtchannelapi.client.Channel::onClose(Ljava/lang/Object;)(evt);
+		}
+		socket.onerror = function(evt) {
+			me.@no.eirikb.gwtchannelapi.client.Channel::onError(Ljava/lang/Object;)(evt);
+		}
+    }-*/;
+
+    private void onClose(final Object evt)
+    {
+        for (final ChannelListener list : m_channelListeners)
+        {
             list.onClose(evt);
+        }
     }
-    private void onError(Object evt) {
-        for (ChannelListener list : channelListeners)
+
+    private void onError(final Object evt)
+    {
+        for (final ChannelListener list : m_channelListeners)
+        {
             list.onError(evt);
+        }
     }
 
-	/**
-	 * Join the channel
-	 */
-	public void join() {
-		join(channelKey);
-	}
+    private void onMessage(final String aEncoded)
+    {
+        final SerializationStreamFactory ssf = GWT.create(ChannelService.class);
+        try
+        {
+            final Message message = (Message)ssf.createStreamReader(aEncoded).readObject();
+            for (int i = 0; i < m_channelListeners.size(); i++)
+            {
+                m_channelListeners.get(i).onReceive(message);
+            }
+        }
+        catch (final SerializationException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * Add a ChannelListener that will respond on events
-	 * 
-	 * @param channelListener
-	 */
-	public void addChannelListener(ChannelListener channelListener) {
-		channelListeners.add(channelListener);
-	}
+    private void onOpen()
+    {
+        for (final ChannelListener list : m_channelListeners)
+        {
+            list.onOpen();
+        }
+    }
 
-	public void removeChannelListener(ChannelListener channelListener) {
-		channelListeners.remove(channelListener);
-	}
+    public void removeAllListeners()
+    {
+        m_channelListeners.clear();
+    }
 
-	private native void join(String channelKey) /*-{
-													var c = new $wnd.goog.appengine.Channel(channelKey);
-													var socket = c.open();
-													var me = this;
-													socket.onmessage = function(evt) {
-													var s = evt.data;
-													me.@no.eirikb.gwtchannelapi.client.Channel::onMessage(Ljava/lang/String;)(s);
-													}
-													socket.onopen = function() {
-													    me.@no.eirikb.gwtchannelapi.client.Channel::onOpen();
-													}
-													socket.onclose = function(evt) {
-													    me.@no.eirikb.gwtchannelapi.client.Channel::onClose(Ljava/lang/Object;)(evt);
-													}
-													socket.onerror = function(evt) {
-													    me.@no.eirikb.gwtchannelapi.client.Channel::onError(Ljava/lang/Object;)(evt);
-													}
-													}-*/;
+    public void removeChannelListener(final ChannelListener channelListener)
+    {
+        m_channelListeners.remove(channelListener);
+    }
 }

@@ -16,4 +16,5 @@ public interface GreetingService extends RemoteService
     Set<String> subscribe(String aRoomName);
     void sendMsg(String channel, String msg);
     Set<String> getRoomList();
+    String openChannel();
 }

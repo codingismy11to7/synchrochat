@@ -3,8 +3,6 @@ package com.progoth.synchrochat.client;
 import java.util.Set;
 
 import no.eirikb.gwtchannelapi.client.Channel;
-import no.eirikb.gwtchannelapi.client.ChannelListenerAdapter;
-import no.eirikb.gwtchannelapi.client.Message;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -13,8 +11,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -27,8 +23,9 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.progoth.synchrochat.client.ChatPanel.MsgSendListener;
-import com.progoth.synchrochat.client.model.ChatMessage;
 import com.progoth.synchrochat.client.model.LoginResponse;
+import com.progoth.synchrochat.client.rpc.ChatChannelListener;
+import com.progoth.synchrochat.client.rpc.ChatChannelListener.ClosedListener;
 import com.progoth.synchrochat.client.rpc.GreetingService;
 import com.progoth.synchrochat.client.rpc.GreetingServiceAsync;
 import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
@@ -167,9 +164,31 @@ public class Synchrochat implements EntryPoint
 
     }
 
-    /**
-     * This is the entry point method.
-     */
+    private final ClosedListener m_channelCloseListener = new ClosedListener()
+    {
+        @Override
+        public void channelClosed()
+        {
+            openChannel();
+        }
+    };
+
+    private void openChannel()
+    {
+        greetingService.openChannel(new SimpleAsyncCallback<String>()
+        {
+            @Override
+            public void onSuccess(String aResult)
+            {
+                m_channel = new Channel(aResult);
+                ChatChannelListener list = new ChatChannelListener(m_channel, m_chatPanel,
+                        m_channelCloseListener);
+                m_channel.addChannelListener(list);
+                m_channel.join();
+            }
+        });
+    }
+
     @Override
     public void onModuleLoad()
     {
@@ -179,32 +198,12 @@ public class Synchrochat implements EntryPoint
                 @Override
                 public void onSuccess(final LoginResponse aResult)
                 {
-                    // TODO Auto-generated method stub
                     m_loginInfo = aResult;
                     if (m_loginInfo.isLoggedIn())
                     {
                         create();
 
-                        m_channel = new Channel(m_loginInfo.getChannelKey());
-                        m_channel.addChannelListener(new ChannelListenerAdapter()
-                        {
-                            @Override
-                            public void onReceive(final Message aMessage)
-                            {
-                                final ChatMessage msg = (ChatMessage)aMessage;
-                                final String line = DateTimeFormat.getFormat(
-                                    PredefinedFormat.DATE_TIME_SHORT).format(msg.getDate())
-                                        + " <"
-                                        + msg.getRoom()
-                                        + ">"
-                                        + " ["
-                                        + msg.getUser()
-                                        + "]: "
-                                        + msg.getMsg();
-                                m_chatPanel.append(line);
-                            }
-                        });
-                        m_channel.join();
+                        openChannel();
 
                         greetingService.getRoomList(new SimpleAsyncCallback<Set<String>>()
                         {

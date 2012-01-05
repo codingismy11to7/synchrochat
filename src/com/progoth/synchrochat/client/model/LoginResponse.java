@@ -4,19 +4,13 @@ import java.io.Serializable;
 
 public class LoginResponse implements Serializable
 {
-    private static final long serialVersionUID = 2341282397361649238L;
+    private static final long serialVersionUID = 3554843768477114287L;
 
     private boolean m_loggedIn = false;
     private String m_loginUrl;
     private String m_logoutUrl;
     private String m_emailAddress;
     private String m_nickname;
-    private String m_channelKey;
-
-    public String getChannelKey()
-    {
-        return m_channelKey;
-    }
 
     public String getEmailAddress()
     {
@@ -41,11 +35,6 @@ public class LoginResponse implements Serializable
     public boolean isLoggedIn()
     {
         return m_loggedIn;
-    }
-
-    public void setChannelKey(final String aChannelKey)
-    {
-        m_channelKey = aChannelKey;
     }
 
     public void setEmailAddress(final String aEmailAddress)

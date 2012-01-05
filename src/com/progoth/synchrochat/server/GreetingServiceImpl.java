@@ -67,7 +67,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
         }
         else
         {
-
             final String serverInfo = getServletContext().getServerInfo();
             final String userAgent = getThreadLocalRequest().getHeader("User-Agent");
 
@@ -80,12 +79,17 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
             resp.setLoggedIn(true);
             resp.setLogoutUrl(userService.createLogoutURL(requestUri));
             resp.setEmailAddress(user.getEmail());
-            resp.setChannelKey(ChannelServiceFactory.getChannelService().createChannel(
-                user.getUserId()));
             resp.setNickname("Hello, " + user.getNickname() + "!\n\nI am running " + serverInfo
                     + ".\n\nIt looks like you are using:\n" + y.asString());
         }
         return resp;
+    }
+
+    @Override
+    public String openChannel()
+    {
+        final User user = getUser();
+        return ChannelServiceFactory.getChannelService().createChannel(user.getUserId());
     }
 
     @Override

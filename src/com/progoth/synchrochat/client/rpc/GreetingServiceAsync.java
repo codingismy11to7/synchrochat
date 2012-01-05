@@ -17,4 +17,6 @@ public interface GreetingServiceAsync
     void sendMsg(String channel, String msg, AsyncCallback<Void> callback);
 
     void getRoomList(AsyncCallback<Set<String>> callback);
+
+    void openChannel(AsyncCallback<String> callback);
 }
