@@ -1,11 +1,10 @@
 package com.progoth.synchrochat.server;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.SortedSet;
+
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 
 import no.eirikb.gwtchannelapi.server.ChannelServer;
 
@@ -18,6 +17,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.progoth.synchrochat.client.model.ChatMessage;
 import com.progoth.synchrochat.client.model.LoginResponse;
+import com.progoth.synchrochat.client.model.RoomList;
 import com.progoth.synchrochat.client.rpc.GreetingService;
 import com.progoth.synchrochat.shared.FieldVerifier;
 
@@ -28,15 +28,46 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 {
     private static final long serialVersionUID = 8471232977034188023L;
 
-    private static final SortedMap<String, Set<String>> sm_rooms = Collections
-        .synchronizedSortedMap(new TreeMap<String, Set<String>>());
+    // private static final SortedMap<String, Set<String>> sm_rooms = Collections
+    // .synchronizedSortedMap(new TreeMap<String, Set<String>>());
 
     @Override
-    public Set<String> getRoomList()
+    public SortedSet<String> getRoomList()
     {
-        synchronized (sm_rooms)
+        return getRoomListImpl(getRoomListObject());
+    }
+
+    private SortedSet<String> getRoomListImpl(final RoomList aRoomList)
+    {
+        return aRoomList.getRooms();
+    }
+
+    private RoomList getRoomListObject()
+    {
+        final RoomList ret = SynchroCache.get(RoomList.KEY);
+        if (ret != null)
+            return ret;
+
+        final PersistenceManager pm = PMF.getEventualReads().getPersistenceManager();
+        try
         {
-            return new TreeSet<String>(sm_rooms.keySet());
+            Query q = pm.newQuery(RoomList.class, "m_key == :rlid");
+            q.setUnique(true);
+            RoomList roomList = (RoomList)q.execute(RoomList.KEY);
+//            RoomList roomList = pm.getObjectById(RoomList.class, RoomList.KEY);
+            if (roomList == null)
+            {
+                roomList = new RoomList();
+                pm.makePersistent(roomList);
+            }
+            return pm.detachCopy(roomList);
+        }
+        catch(Exception e){
+            e.printStackTrace();return null;
+        }
+        finally
+        {
+            pm.close();
         }
     }
 
@@ -92,17 +123,28 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
         return ChannelServiceFactory.getChannelService().createChannel(user.getUserId());
     }
 
+    private void persistRoomList(final RoomList aRoomList)
+    {
+        SynchroCache.getCache().put(RoomList.KEY, aRoomList);
+
+        final PersistenceManager pm = PMF.getEventualReads().getPersistenceManager();
+        try
+        {
+            pm.makePersistent(aRoomList);
+        }
+        finally
+        {
+            pm.close();
+        }
+    }
+
     @Override
     public void sendMsg(final String aChannel, final String aMsg)
     {
         final ChatMessage msg = new ChatMessage(aChannel, aMsg, getUser().getNickname());
-        // msg.setMsg(aMsg);
-        if (sm_rooms.containsKey(aChannel))
+        for (final String user : getRoomListObject().getSubscribedUsers(aChannel))
         {
-            for (final String user : sm_rooms.get(aChannel))
-            {
-                ChannelServer.send(user, msg);
-            }
+            ChannelServer.send(user, msg);
         }
     }
 
@@ -112,18 +154,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
         final User user = getUser();
         if (user == null)
             throw new RuntimeException("null user");
+
         final String userId = user.getUserId();
-        // String key = ChannelServiceFactory.getChannelService().createChannel(userId);
-        // if (key == null) throw new RuntimeException("null key!");
-        synchronized (sm_rooms)
-        {
-            if (!sm_rooms.containsKey(aName))
-            {
-                sm_rooms.put(aName, new HashSet<String>());
-            }
-            sm_rooms.get(aName).add(userId);
-            // return key;
-            return getRoomList();
-        }
+
+        final RoomList rl = getRoomListObject();
+        rl.addUserToRoom(aName, userId);
+        persistRoomList(rl);
+        return getRoomListImpl(rl);
     }
 }

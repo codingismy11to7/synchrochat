@@ -13,7 +13,7 @@
 
       <threadsafe>true</threadsafe>
   -->
-  <threadsafe>true</threadsafe>
+  <threadsafe>false</threadsafe>
 
   <!-- Configure serving/caching of GWT files -->
   <static-files>
