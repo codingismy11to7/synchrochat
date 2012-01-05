@@ -39,8 +39,10 @@ public class ChatChannelListener extends ChannelListenerAdapter
     public void onReceive(final Message aMessage)
     {
         final ChatMessage msg = (ChatMessage)aMessage;
-        final String dateTimeString = DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT)
-            .format(msg.getDate());
+        final String dateTimeString = DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT).format(
+            msg.getDate())
+                + ' '
+                + DateTimeFormat.getFormat(PredefinedFormat.TIME_MEDIUM).format(msg.getDate());
         final String line = dateTimeString + " <" + msg.getRoom() + ">" + " [" + msg.getUser()
                 + "]: " + msg.getMsg();
         m_chatPanel.append(line);
