@@ -3,6 +3,8 @@ package com.progoth.synchrochat.client;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -26,6 +28,15 @@ public class ChatPanel extends SplitLayoutPanel
 
     private final TextArea m_chatArea, m_input;
     protected List<MsgSendListener> m_lists = new LinkedList<MsgSendListener>();
+
+    private final ScheduledCommand m_focusCmd = new ScheduledCommand()
+    {
+        @Override
+        public void execute()
+        {
+            m_input.setFocus(true);
+        }
+    };
 
     public ChatPanel()
     {
@@ -53,9 +64,10 @@ public class ChatPanel extends SplitLayoutPanel
         m_input.addKeyUpHandler(new KeyUpHandler()
         {
             @Override
-            public void onKeyUp(KeyUpEvent aEvent)
+            public void onKeyUp(final KeyUpEvent aEvent)
             {
-                if (aEvent.getNativeKeyCode() == KeyCodes.KEY_ENTER && !aEvent.isAnyModifierKeyDown())
+                if (aEvent.getNativeKeyCode() == KeyCodes.KEY_ENTER
+                        && !aEvent.isAnyModifierKeyDown())
                 {
                     aEvent.preventDefault();
                     aEvent.stopPropagation();
@@ -80,7 +92,11 @@ public class ChatPanel extends SplitLayoutPanel
 
     public void append(final String aLine)
     {
-        m_chatArea.setText(m_chatArea.getText() + "\n" + aLine.trim());
+        final String newText = m_chatArea.getText() + "\n" + aLine.trim();
+        m_chatArea.setText(newText);
+        m_chatArea.setCursorPos(newText.length());
+        m_chatArea.getElement().setScrollTop(m_chatArea.getElement().getScrollHeight());
+        focusInput();
     }
 
     private void doSend()
@@ -94,6 +110,11 @@ public class ChatPanel extends SplitLayoutPanel
                 l.onMsg(msg);
             }
         }
-        m_input.setFocus(true);
+        focusInput();
+    }
+
+    private void focusInput()
+    {
+        Scheduler.get().scheduleDeferred(m_focusCmd);
     }
 }
