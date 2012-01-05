@@ -1,6 +1,7 @@
 package com.progoth.synchrochat.client.rpc;
 
 import java.util.Set;
+import java.util.SortedSet;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -15,6 +16,6 @@ public interface GreetingService extends RemoteService
     LoginResponse greetServer(String requestUri, String name) throws IllegalArgumentException;
     Set<String> subscribe(String aRoomName);
     void sendMsg(String channel, String msg);
-    Set<String> getRoomList();
+    SortedSet<String> getRoomList();
     String openChannel();
 }

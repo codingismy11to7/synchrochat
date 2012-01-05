@@ -1,6 +1,7 @@
 package com.progoth.synchrochat.client.rpc;
 
 import java.util.Set;
+import java.util.SortedSet;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.progoth.synchrochat.client.model.LoginResponse;
@@ -16,7 +17,7 @@ public interface GreetingServiceAsync
 
     void sendMsg(String channel, String msg, AsyncCallback<Void> callback);
 
-    void getRoomList(AsyncCallback<Set<String>> callback);
+    void getRoomList(AsyncCallback<SortedSet<String>> callback);
 
     void openChannel(AsyncCallback<String> callback);
 }

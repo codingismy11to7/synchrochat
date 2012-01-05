@@ -1,6 +1,7 @@
 package com.progoth.synchrochat.client;
 
 import java.util.Set;
+import java.util.SortedSet;
 
 import no.eirikb.gwtchannelapi.client.Channel;
 
@@ -205,10 +206,10 @@ public class Synchrochat implements EntryPoint
 
                         openChannel();
 
-                        greetingService.getRoomList(new SimpleAsyncCallback<Set<String>>()
+                        greetingService.getRoomList(new SimpleAsyncCallback<SortedSet<String>>()
                         {
                             @Override
-                            public void onSuccess(final Set<String> aResult)
+                            public void onSuccess(final SortedSet<String> aResult)
                             {
                                 onRoomsReceived(aResult);
                             }
