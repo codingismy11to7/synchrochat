@@ -15,11 +15,11 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.progoth.synchrochat.client.model.ChatMessage;
-import com.progoth.synchrochat.client.model.LoginResponse;
-import com.progoth.synchrochat.client.model.RoomList;
 import com.progoth.synchrochat.client.rpc.GreetingService;
 import com.progoth.synchrochat.shared.FieldVerifier;
+import com.progoth.synchrochat.shared.model.ChatMessage;
+import com.progoth.synchrochat.shared.model.LoginResponse;
+import com.progoth.synchrochat.shared.model.RoomList;
 
 /**
  * The server side implementation of the RPC service.

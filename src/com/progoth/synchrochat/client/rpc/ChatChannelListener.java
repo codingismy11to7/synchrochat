@@ -7,7 +7,7 @@ import no.eirikb.gwtchannelapi.client.Message;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.progoth.synchrochat.client.ChatPanel;
-import com.progoth.synchrochat.client.model.ChatMessage;
+import com.progoth.synchrochat.shared.model.ChatMessage;
 
 public class ChatChannelListener extends ChannelListenerAdapter
 {

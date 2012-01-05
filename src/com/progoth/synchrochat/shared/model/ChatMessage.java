@@ -1,4 +1,4 @@
-package com.progoth.synchrochat.client.model;
+package com.progoth.synchrochat.shared.model;
 
 import java.util.Date;
 

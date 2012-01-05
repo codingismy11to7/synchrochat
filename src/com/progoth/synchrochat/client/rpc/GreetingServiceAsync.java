@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.progoth.synchrochat.client.model.LoginResponse;
+import com.progoth.synchrochat.shared.model.LoginResponse;
 
 /**
  * The async counterpart of <code>GreetingService</code>.

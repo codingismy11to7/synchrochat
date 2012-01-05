@@ -24,12 +24,12 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.progoth.synchrochat.client.ChatPanel.MsgSendListener;
-import com.progoth.synchrochat.client.model.LoginResponse;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener.ClosedListener;
 import com.progoth.synchrochat.client.rpc.GreetingService;
 import com.progoth.synchrochat.client.rpc.GreetingServiceAsync;
 import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
+import com.progoth.synchrochat.shared.model.LoginResponse;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.

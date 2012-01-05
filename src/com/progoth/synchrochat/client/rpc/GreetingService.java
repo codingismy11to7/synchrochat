@@ -5,7 +5,7 @@ import java.util.SortedSet;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import com.progoth.synchrochat.client.model.LoginResponse;
+import com.progoth.synchrochat.shared.model.LoginResponse;
 
 /**
  * The client side stub for the RPC service.
