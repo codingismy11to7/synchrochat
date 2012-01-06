@@ -13,6 +13,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
+import com.google.gwt.user.client.Window.ClosingHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
@@ -90,7 +93,22 @@ public class Synchrochat implements EntryPoint
             public void onClick(ClickEvent aEvent)
             {
                 if (Window.confirm("this will log you out of all google services!"))
-                    Window.Location.assign(m_loginInfo.getLogoutUrl());
+                {
+                    greetingService.logout(new AsyncCallback<Void>()
+                    {
+                        @Override
+                        public void onFailure(Throwable aCaught)
+                        {
+                            Window.Location.assign(m_loginInfo.getLogoutUrl());
+                        }
+
+                        @Override
+                        public void onSuccess(Void aResult)
+                        {
+                            Window.Location.assign(m_loginInfo.getLogoutUrl());
+                        }
+                    });
+                }
             }
         });
         horizontalPanel.add(signOut);
@@ -166,6 +184,22 @@ public class Synchrochat implements EntryPoint
             });
 
         splitLayoutPanel.add(m_chatPanel);
+
+        Window.addWindowClosingHandler(new ClosingHandler()
+        {
+            @Override
+            public void onWindowClosing(ClosingEvent aEvent)
+            {
+                greetingService.logout(new SimpleAsyncCallback<Void>()
+                {
+                    @Override
+                    public void onSuccess(Void aResult)
+                    {
+                        // don't care
+                    }
+                });
+            }
+        });
     }
 
     private final ClosedListener m_channelCloseListener = new ClosedListener()

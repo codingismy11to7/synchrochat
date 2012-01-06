@@ -20,4 +20,6 @@ public interface GreetingServiceAsync
     void getRoomList(AsyncCallback<SortedSet<String>> callback);
 
     void openChannel(AsyncCallback<String> callback);
+
+    void logout(AsyncCallback<Void> callback);
 }

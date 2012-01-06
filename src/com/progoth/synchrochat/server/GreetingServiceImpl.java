@@ -3,9 +3,6 @@ package com.progoth.synchrochat.server;
 import java.util.Set;
 import java.util.SortedSet;
 
-import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
-
 import no.eirikb.gwtchannelapi.server.ChannelServer;
 
 import com.google.appengine.api.channel.ChannelServiceFactory;
@@ -19,7 +16,6 @@ import com.progoth.synchrochat.client.rpc.GreetingService;
 import com.progoth.synchrochat.shared.FieldVerifier;
 import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.LoginResponse;
-import com.progoth.synchrochat.shared.model.RoomList;
 
 /**
  * The server side implementation of the RPC service.
@@ -31,37 +27,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     @Override
     public SortedSet<String> getRoomList()
     {
-        return getRoomListImpl(getRoomListObject());
-    }
-
-    private SortedSet<String> getRoomListImpl(final RoomList aRoomList)
-    {
-        return aRoomList.getRooms();
-    }
-
-    private RoomList getRoomListObject()
-    {
-        final RoomList ret = SynchroCache.get(RoomList.KEY);
-        if (ret != null)
-            return ret;
-
-        final PersistenceManager pm = PMF.getEventualReads().getPersistenceManager();
-        try
-        {
-            Query q = pm.newQuery(RoomList.class, "m_key == :rlid");
-            q.setUnique(true);
-            RoomList roomList = (RoomList)q.execute(RoomList.KEY);
-            if (roomList == null)
-            {
-                roomList = new RoomList();
-                pm.makePersistent(roomList);
-            }
-            return pm.detachCopy(roomList);
-        }
-        finally
-        {
-            pm.close();
-        }
+        return RoomList.get().getRooms();
     }
 
     private User getUser()
@@ -105,8 +71,16 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
             resp.setEmailAddress(user.getEmail());
             resp.setNickname("Hello, " + user.getNickname() + "!\n\nI am running " + serverInfo
                     + ".\n\nIt looks like you are using:\n" + y.asString());
+
+            SynchroSessions.get().startSession();
         }
         return resp;
+    }
+
+    @Override
+    public void logout()
+    {
+        SynchroSessions.get().endSession();
     }
 
     @Override
@@ -116,26 +90,11 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
         return ChannelServiceFactory.getChannelService().createChannel(user.getUserId());
     }
 
-    private void persistRoomList(final RoomList aRoomList)
-    {
-        SynchroCache.getCache().put(RoomList.KEY, aRoomList);
-
-        final PersistenceManager pm = PMF.getEventualReads().getPersistenceManager();
-        try
-        {
-            pm.makePersistent(aRoomList);
-        }
-        finally
-        {
-            pm.close();
-        }
-    }
-
     @Override
     public void sendMsg(final String aChannel, final String aMsg)
     {
         final ChatMessage msg = new ChatMessage(aChannel, aMsg, getUser().getNickname());
-        for (final String user : getRoomListObject().getSubscribedUsers(aChannel))
+        for (final String user : RoomList.get().getSubscribedUsers(aChannel))
         {
             ChannelServer.send(user, msg);
         }
@@ -144,15 +103,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     @Override
     public Set<String> subscribe(final String aName)
     {
-        final User user = getUser();
-        if (user == null)
-            throw new RuntimeException("null user");
+        final RoomList rl = SynchroSessions.get().addUserToRoom(aName.trim());
 
-        final String userId = user.getUserId();
-
-        final RoomList rl = getRoomListObject();
-        rl.addUserToRoom(aName, userId);
-        persistRoomList(rl);
-        return getRoomListImpl(rl);
+        return rl.getRooms();
     }
 }

@@ -14,6 +14,7 @@ import com.progoth.synchrochat.shared.model.LoginResponse;
 public interface GreetingService extends RemoteService
 {
     LoginResponse greetServer(String requestUri, String name) throws IllegalArgumentException;
+    void logout();
     Set<String> subscribe(String aRoomName);
     void sendMsg(String channel, String msg);
     SortedSet<String> getRoomList();
