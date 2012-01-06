@@ -28,9 +28,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
 {
     private static final long serialVersionUID = 8471232977034188023L;
 
-    // private static final SortedMap<String, Set<String>> sm_rooms = Collections
-    // .synchronizedSortedMap(new TreeMap<String, Set<String>>());
-
     @Override
     public SortedSet<String> getRoomList()
     {
@@ -54,16 +51,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
             Query q = pm.newQuery(RoomList.class, "m_key == :rlid");
             q.setUnique(true);
             RoomList roomList = (RoomList)q.execute(RoomList.KEY);
-//            RoomList roomList = pm.getObjectById(RoomList.class, RoomList.KEY);
             if (roomList == null)
             {
                 roomList = new RoomList();
                 pm.makePersistent(roomList);
             }
             return pm.detachCopy(roomList);
-        }
-        catch(Exception e){
-            e.printStackTrace();return null;
         }
         finally
         {

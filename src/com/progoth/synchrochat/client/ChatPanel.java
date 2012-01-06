@@ -1,8 +1,5 @@
 package com.progoth.synchrochat.client;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
@@ -18,16 +15,11 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.progoth.synchrochat.client.events.ChatMessageSendEvent;
 
 public class ChatPanel extends SplitLayoutPanel
 {
-    public static interface MsgSendListener
-    {
-        void onMsg(String aMsg);
-    }
-
     private final TextArea m_chatArea, m_input;
-    protected List<MsgSendListener> m_lists = new LinkedList<MsgSendListener>();
 
     private final ScheduledCommand m_focusCmd = new ScheduledCommand()
     {
@@ -85,11 +77,6 @@ public class ChatPanel extends SplitLayoutPanel
         add(m_chatArea);
     }
 
-    public void addMsgSendListener(final MsgSendListener aListener)
-    {
-        m_lists.add(aListener);
-    }
-
     public void append(final String aLine)
     {
         final String newText = m_chatArea.getText() + "\n" + aLine.trim();
@@ -105,11 +92,9 @@ public class ChatPanel extends SplitLayoutPanel
         m_input.setText("");
         if (!msg.isEmpty())
         {
-            for (final MsgSendListener l : m_lists)
-            {
-                l.onMsg(msg);
-            }
+            SynchroController.get().fireEvent(new ChatMessageSendEvent(msg));
         }
+
         focusInput();
     }
 

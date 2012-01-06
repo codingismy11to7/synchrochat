@@ -23,7 +23,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
-import com.progoth.synchrochat.client.ChatPanel.MsgSendListener;
+import com.progoth.synchrochat.client.events.ChatMessageSendEvent;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener.ClosedListener;
 import com.progoth.synchrochat.client.rpc.GreetingService;
@@ -138,31 +138,34 @@ public class Synchrochat implements EntryPoint
 
         m_chatPanel = new ChatPanel();
         m_chatPanel.append(m_loginInfo.getNickname());
-        m_chatPanel.addMsgSendListener(new MsgSendListener()
-        {
-            @Override
-            public void onMsg(final String aMsg)
+        SynchroController.get().addHandler(ChatMessageSendEvent.TYPE,
+            new ChatMessageSendEvent.Handler()
             {
-                if (m_roomList.getItemCount() == 0)
-                    return;
-                final int idx = m_roomList.getSelectedIndex();
-                String room = m_roomList.getItemText(0);
-                if (idx >= 0)
+                @Override
+                public void onMessage(ChatMessageSendEvent aEvt)
                 {
-                    room = m_roomList.getItemText(idx);
-                }
-                greetingService.sendMsg(room, aMsg, new SimpleAsyncCallback<Void>()
-                {
-                    @Override
-                    public void onSuccess(final Void aResult)
+                    if (m_roomList.getItemCount() == 0)
+                        return;
+                    final int idx = m_roomList.getSelectedIndex();
+                    String room = m_roomList.getItemText(0);
+                    if (idx >= 0)
                     {
-
+                        room = m_roomList.getItemText(idx);
                     }
-                });
-            }
-        });
-        splitLayoutPanel.add(m_chatPanel);
 
+                    greetingService.sendMsg(room, aEvt.getMessage(),
+                        new SimpleAsyncCallback<Void>()
+                        {
+                            @Override
+                            public void onSuccess(final Void aResult)
+                            {
+
+                            }
+                        });
+                }
+            });
+
+        splitLayoutPanel.add(m_chatPanel);
     }
 
     private final ClosedListener m_channelCloseListener = new ClosedListener()
