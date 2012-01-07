@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -14,6 +12,12 @@ import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.progoth.synchrochat.shared.model.ChatRoom;
 
 @PersistenceCapable
 public class RoomList implements Serializable
@@ -52,11 +56,11 @@ public class RoomList implements Serializable
     @PrimaryKey
     private String m_key = KEY;
 
-    @Persistent(serialized="true")
-    private SortedMap<String, Set<String>> m_roomMap = new TreeMap<String, Set<String>>();
+    @Persistent(serialized = "true")
+    private SortedMap<String, Set<String>> m_roomMap = Maps.newTreeMap();
 
-    @Persistent(serialized="true")
-    private SortedMap<String, Set<String>> m_roomsByUser = new TreeMap<String, Set<String>>();
+    @Persistent(serialized = "true")
+    private SortedMap<String, Set<String>> m_roomsByUser = Maps.newTreeMap();
 
     public void addUserToRoom(final String aRoom, final String aUserId)
     {
@@ -70,9 +74,20 @@ public class RoomList implements Serializable
         return m_key;
     }
 
-    public SortedSet<String> getRooms()
+    public SortedSet<ChatRoom> getRooms()
     {
-        return new TreeSet<String>(m_roomMap.keySet());
+        return Sets.newTreeSet(Collections2.transform(m_roomMap.keySet(),
+            new Function<String, ChatRoom>()
+            {
+                @Override
+                public ChatRoom apply(final String aArg0)
+                {
+                    final ChatRoom ret = new ChatRoom();
+                    ret.setName(aArg0);
+                    ret.setUserCount(m_roomMap.get(aArg0).size());
+                    return ret;
+                }
+            }));
     }
 
     private Set<String> getRoomsForUser(final String aUser)

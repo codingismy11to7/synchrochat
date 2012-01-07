@@ -1,6 +1,5 @@
 package com.progoth.synchrochat.client;
 
-import java.util.Set;
 import java.util.SortedSet;
 
 import no.eirikb.gwtchannelapi.client.Channel;
@@ -27,11 +26,13 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.progoth.synchrochat.client.events.ChatMessageSendEvent;
+import com.progoth.synchrochat.client.events.RoomListReceivedEvent;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener.ClosedListener;
 import com.progoth.synchrochat.client.rpc.GreetingService;
 import com.progoth.synchrochat.client.rpc.GreetingServiceAsync;
 import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
+import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 
 /**
@@ -51,10 +52,10 @@ public class Synchrochat implements EntryPoint
 
     private void subscribe(final String aRoomName)
     {
-        greetingService.subscribe(aRoomName.trim(), new SimpleAsyncCallback<Set<String>>()
+        greetingService.subscribe(aRoomName.trim(), new SimpleAsyncCallback<SortedSet<ChatRoom>>()
         {
             @Override
-            public void onSuccess(final Set<String> aResult)
+            public void onSuccess(final SortedSet<ChatRoom> aResult)
             {
                 onRoomsReceived(aResult);
                 m_chatPanel.append("Joined " + aRoomName.trim());
@@ -62,10 +63,11 @@ public class Synchrochat implements EntryPoint
         });
     }
 
-    private void onRoomsReceived(Set<String> aRooms)
+    private void onRoomsReceived(SortedSet<ChatRoom> aRooms)
     {
         m_roomList.clear();
-        for (String room : aRooms) m_roomList.addItem(room);
+        for (ChatRoom room : aRooms) m_roomList.addItem(room.getName());
+        SynchroController.get().fireEvent(new RoomListReceivedEvent(aRooms));
     }
 
     /**
@@ -117,7 +119,7 @@ public class Synchrochat implements EntryPoint
         dockLayoutPanel.add(splitLayoutPanel);
 
         final LayoutPanel layoutPanel = new LayoutPanel();
-        splitLayoutPanel.addWest(layoutPanel, 100.0);
+        splitLayoutPanel.addWest(layoutPanel, 150.0);
 
         final HorizontalPanel horizontalPanel_1 = new HorizontalPanel();
         horizontalPanel_1.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
@@ -145,6 +147,11 @@ public class Synchrochat implements EntryPoint
         layoutPanel.setWidgetLeftWidth(m_roomList, 0.0, Unit.PX, 100.0, Unit.PCT);
         layoutPanel.setWidgetTopHeight(m_roomList, 36.0, Unit.PX, 100.0, Unit.PX);
         m_roomList.setVisibleItemCount(10);
+        
+        RoomListPanel roomListPanel = new RoomListPanel();
+        layoutPanel.add(roomListPanel);
+        layoutPanel.setWidgetLeftWidth(roomListPanel, 0.0, Unit.PX, 100.0, Unit.PCT);
+        layoutPanel.setWidgetTopHeight(roomListPanel, 158.0, Unit.PX, 100.0, Unit.PX);
         m_roomList.addDoubleClickHandler(new DoubleClickHandler()
         {
             @Override
@@ -243,10 +250,10 @@ public class Synchrochat implements EntryPoint
 
                         openChannel();
 
-                        greetingService.getRoomList(new SimpleAsyncCallback<SortedSet<String>>()
+                        greetingService.getRoomList(new SimpleAsyncCallback<SortedSet<ChatRoom>>()
                         {
                             @Override
-                            public void onSuccess(final SortedSet<String> aResult)
+                            public void onSuccess(final SortedSet<ChatRoom> aResult)
                             {
                                 onRoomsReceived(aResult);
                             }

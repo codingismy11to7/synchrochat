@@ -26,3 +26,9 @@ body {
 	font-family: monospace;
 	font-size: larger;
 }
+
+div.chatRoomItem {
+	font-family: monospace;
+	font-size: larger;
+	border: solid black 1px;
+}

@@ -1,6 +1,5 @@
 package com.progoth.synchrochat.server;
 
-import java.util.Set;
 import java.util.SortedSet;
 
 import no.eirikb.gwtchannelapi.server.ChannelServer;
@@ -15,6 +14,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.progoth.synchrochat.client.rpc.GreetingService;
 import com.progoth.synchrochat.shared.FieldVerifier;
 import com.progoth.synchrochat.shared.model.ChatMessage;
+import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 
 /**
@@ -25,7 +25,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     private static final long serialVersionUID = 8471232977034188023L;
 
     @Override
-    public SortedSet<String> getRoomList()
+    public SortedSet<ChatRoom> getRoomList()
     {
         return RoomList.get().getRooms();
     }
@@ -101,7 +101,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     }
 
     @Override
-    public Set<String> subscribe(final String aName)
+    public SortedSet<ChatRoom> subscribe(final String aName)
     {
         final RoomList rl = SynchroSessions.get().addUserToRoom(aName.trim());
 
