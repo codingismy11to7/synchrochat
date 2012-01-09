@@ -16,6 +16,8 @@ public class KbPromptMessageBox extends PromptMessageBox
     {
         super(aTitle, aMessage);
 
+        setIcon(ICONS.question());
+
         setOnEsc(true);
         setClosable(true);
         getTextField().addKeyUpHandler(new KeyUpHandler()

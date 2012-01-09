@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 import com.progoth.synchrochat.client.SynchroController;
 import com.progoth.synchrochat.client.events.NewRoomInputEvent;
 import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
+import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.ChatRoomProperties;
 import com.sencha.gxt.core.client.util.Margins;
@@ -130,6 +131,7 @@ public class RoomListPanel extends ContentPanel
                 nameDialog.show();
             }
         });
+        newButton.setIcon(SynchroImages.get().add());
 
         final HBoxLayoutContainer btnContainer = new HBoxLayoutContainer(HBoxLayoutAlign.MIDDLE);
         btnContainer.setPack(BoxLayoutPack.START);

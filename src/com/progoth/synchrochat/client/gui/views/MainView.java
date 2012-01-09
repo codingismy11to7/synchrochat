@@ -1,9 +1,13 @@
 package com.progoth.synchrochat.client.gui.views;
 
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Anchor;
+import com.progoth.synchrochat.client.SynchroController;
+import com.progoth.synchrochat.client.events.LoginResponseReceivedEvent;
+import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.progoth.synchrochat.client.gui.widgets.RoomListPanel;
+import com.progoth.synchrochat.shared.model.LoginResponse;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.button.TextButton;
@@ -14,6 +18,9 @@ import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer.HBoxLayoutAlign;
 import com.sencha.gxt.widget.core.client.container.MarginData;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
+import com.sencha.gxt.widget.core.client.info.Info;
+import com.sencha.gxt.widget.core.client.menu.Menu;
+import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
 public class MainView extends ContentPanel
 {
@@ -27,36 +34,25 @@ public class MainView extends ContentPanel
         setBodyBorder(false);
         setBorders(false);
 
-        BorderLayoutContainer cont = new BorderLayoutContainer();
+        final BorderLayoutContainer cont = new BorderLayoutContainer();
         cont.setBorders(true);
 
         createTop(cont);
         createLeft(cont);
 
-        SimpleContainer sc = new SimpleContainer();
+        final SimpleContainer sc = new SimpleContainer();
         sc.setResize(false);
         sc.add(new TextButton("o hai"), new MarginData(20));
         cont.setCenterWidget(sc, new MarginData());
 
-//        ContentPanel cp = new ContentPanel();
-//        cp.setHeadingText("blah");
-//        cp.setWidget(new Label("o hai"));
-//        BorderLayoutData bld = new BorderLayoutData(150);
-//        bld.setFloatable(true);
-//        bld.setCollapseMini(true);
-//        cont.setEastWidget(cp, bld);
-
         add(cont);
     }
 
-    private void createLeft(BorderLayoutContainer aContainer)
+    private void createLeft(final BorderLayoutContainer aContainer)
     {
         final BorderLayoutData layout = new BorderLayoutData(200);
-//        layout.setCollapseHidden(false);
-//        layout.setMinSize(100);
-//        layout.setMaxSize(600);
-//        layout.setCollapseMini(true);
-//        layout.setFloatable(true);
+        // layout.setMinSize(100);
+        // layout.setMaxSize(600);
         layout.setCollapsible(true);
         layout.setSplit(true);
         layout.setCollapseMini(true);
@@ -65,16 +61,34 @@ public class MainView extends ContentPanel
         aContainer.setWestWidget(new RoomListPanel(), layout);
     }
 
-    private void createTop(BorderLayoutContainer aContainer)
+    private void createTop(final BorderLayoutContainer aContainer)
     {
         final HBoxLayoutContainer north = new HBoxLayoutContainer(HBoxLayoutAlign.MIDDLE);
-//        north.setBorders(false);
-//        north.setMargins(new Margins(5));
         north.setPack(BoxLayoutPack.END);
 
-        final Anchor signOut = new Anchor(new SafeHtmlBuilder().appendEscaped("Sign")
-            .appendHtmlConstant("&nbsp;").appendEscaped("Out").toSafeHtml());
-        north.add(signOut);
+        final Menu soMenu = new Menu();
+        final MenuItem logoutMenuItem = new MenuItem("Sign Out", new SelectionHandler<MenuItem>()
+        {
+            @Override
+            public void onSelection(final SelectionEvent<MenuItem> aEvent)
+            {
+                Info.display("sign out", "now");
+            }
+        });
+        logoutMenuItem.setIcon(SynchroImages.get().disconnect());
+        soMenu.add(logoutMenuItem);
+        final TextButton signOutButton = new TextButton("me");
+        signOutButton.setIcon(SynchroImages.get().user_gray());
+        signOutButton.setMenu(soMenu);
+        SynchroController.get().addHandler(LoginResponseReceivedEvent.TYPE,
+            new LoginResponseReceivedEvent.Handler()
+            {
+                @Override
+                public void loginReceived(final LoginResponse aResponse)
+                {
+                    signOutButton.setText(aResponse.getNickname());
+                }
+            });
 
         final BorderLayoutData layout = new BorderLayoutData(28);
         layout.setCollapsible(false);
