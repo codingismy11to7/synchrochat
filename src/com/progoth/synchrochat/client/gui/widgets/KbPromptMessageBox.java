@@ -1,14 +1,8 @@
 package com.progoth.synchrochat.client.gui.widgets;
 
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.user.client.Event;
+import com.google.gwt.dom.client.NativeEvent;
+import com.sencha.gxt.core.client.util.KeyNav;
 import com.sencha.gxt.widget.core.client.box.PromptMessageBox;
-import com.sencha.gxt.widget.core.client.event.AddEvent;
-import com.sencha.gxt.widget.core.client.event.AddEvent.AddHandler;
 
 public class KbPromptMessageBox extends PromptMessageBox
 {
@@ -20,54 +14,28 @@ public class KbPromptMessageBox extends PromptMessageBox
 
         setOnEsc(true);
         setClosable(true);
-        getTextField().addKeyUpHandler(new KeyUpHandler()
-        {
-            @Override
-            public void onKeyUp(final KeyUpEvent aEvent)
-            {
-                if (aEvent.getNativeKeyCode() == KeyCodes.KEY_ENTER)
-                {
-                    hide(getButtonById(PredefinedButton.OK.name()));
-                }
-            }
-        });
 
-        addAddHandler(new AddHandler()
+        new KeyNav(getTextField())
         {
             @Override
-            public void onAdd(final AddEvent aEvent)
+            public void onEnter(final NativeEvent aEvt)
             {
-                Scheduler.get().scheduleDeferred(new ScheduledCommand()
-                {
-                    @Override
-                    public void execute()
-                    {
-                        focusBox();
-                    }
-                });
+                aEvt.preventDefault();
+                aEvt.stopPropagation();
+
+                hide(getButtonById(PredefinedButton.OK.name()));
             }
-        });
+        };
     }
 
-    protected void focusBox()
+    public String getTextFieldValue()
+    {
+        return getTextField().getText();
+    }
+
+    public void grabFocus()
     {
         focus();
         getTextField().focus();
-    }
-
-    // hack until they fix this, whatever it is that's wrong with it
-    @Override
-    protected void onKeyPress(final Event we)
-    {
-        final int keyCode = we.getKeyCode();
-
-        if (keyCode == KeyCodes.KEY_ESCAPE && isClosable() && isOnEsc())
-        {
-            hide();
-        }
-        else
-        {
-            super.onKeyPress(we);
-        }
     }
 }

@@ -18,10 +18,10 @@ public class SynchroChat implements EntryPoint, NewRoomInputEvent.Handler,
         RoomJoinRequestEvent.Handler
 {
     @Override
-    public void newRoomRequested(final String aRoomName)
+    public void newRoomRequested(final String aRoomName, String aPassword)
     {
         // subscribe
-        Info.display("Created Room", aRoomName);
+        Info.display("Created Room", aRoomName + (aPassword != null ? "; pw: " + aPassword : ""));
     }
 
     @Override

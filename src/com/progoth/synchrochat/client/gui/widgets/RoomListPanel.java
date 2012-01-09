@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.HasDirection.Direction;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.progoth.synchrochat.client.events.NewRoomInputEvent;
@@ -15,8 +17,8 @@ import com.progoth.synchrochat.shared.model.ChatRoomProperties;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.widget.core.client.ContentPanel;
-import com.sencha.gxt.widget.core.client.box.PromptMessageBox;
-import com.sencha.gxt.widget.core.client.button.TextButton;
+import com.sencha.gxt.widget.core.client.Dialog.PredefinedButton;
+import com.sencha.gxt.widget.core.client.button.SplitButton;
 import com.sencha.gxt.widget.core.client.container.BorderLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.BorderLayoutContainer.BorderLayoutData;
 import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
@@ -33,6 +35,9 @@ import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.GridSelectionModel;
+import com.sencha.gxt.widget.core.client.menu.Item;
+import com.sencha.gxt.widget.core.client.menu.Menu;
+import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
 public class RoomListPanel extends ContentPanel
 {
@@ -105,32 +110,28 @@ public class RoomListPanel extends ContentPanel
 
     private void createTop(final BorderLayoutContainer aContainer)
     {
-        final TextButton newButton = new TextButton("New Room...", new SelectHandler()
+        final SplitButton newButton = new SplitButton("New Room");
+        newButton.addSelectHandler(new SelectHandler()
         {
             @Override
             public void onSelect(final SelectEvent aEvent)
             {
-                final PromptMessageBox nameDialog = new KbPromptMessageBox("New Room",
-                        "Name of room:");
-                nameDialog.addHideHandler(new HideHandler()
-                {
-                    @Override
-                    public void onHide(final HideEvent aEvent)
-                    {
-                        String roomName = nameDialog.getValue();
-                        if (roomName != null)
-                        {
-                            roomName = roomName.trim();
-                            if (!roomName.isEmpty())
-                            {
-                                SynchroBus.get().fireEvent(new NewRoomInputEvent(roomName));
-                            }
-                        }
-                    }
-                });
-                nameDialog.show();
+                onNewRoomClick(false);
             }
         });
+        final MenuItem withPw = new MenuItem("With Password", SynchroImages.get().lock_add());
+        withPw.addSelectionHandler(new SelectionHandler<Item>()
+        {
+            @Override
+            public void onSelection(final SelectionEvent<Item> aEvent)
+            {
+                onNewRoomClick(true);
+            }
+        });
+        final Menu newBtnMenu = new Menu();
+        newBtnMenu.add(withPw);
+        newButton.setMenu(newBtnMenu);
+
         newButton.setIcon(SynchroImages.get().add());
 
         final HBoxLayoutContainer btnContainer = new HBoxLayoutContainer(HBoxLayoutAlign.MIDDLE);
@@ -141,5 +142,63 @@ public class RoomListPanel extends ContentPanel
         final BorderLayoutData bld = new BorderLayoutData(32);
         bld.setMargins(new Margins(5));
         aContainer.setNorthWidget(btnContainer, bld);
+    }
+
+    private void onNewRoomClick(final boolean aWithPassword)
+    {
+        final KbPromptMessageBox nameDialog = new KbPromptMessageBox("New Room", "Name of room:");
+        nameDialog.addHideHandler(new HideHandler()
+        {
+            @Override
+            public void onHide(final HideEvent aEvent)
+            {
+                if (nameDialog.getHideButton() != nameDialog.getButtonById(PredefinedButton.OK
+                    .name()))
+                    return;
+
+                String roomName = nameDialog.getTextFieldValue();
+                if (roomName != null)
+                {
+                    roomName = roomName.trim();
+                    if (!roomName.isEmpty())
+                    {
+                        if (aWithPassword)
+                        {
+                            requestPassword(roomName);
+                        }
+                        else
+                        {
+                            SynchroBus.get().fireEvent(new NewRoomInputEvent(roomName));
+                        }
+                    }
+                }
+            }
+        });
+        nameDialog.show();
+        nameDialog.grabFocus();
+    }
+
+    private void requestPassword(final String aRoomName)
+    {
+        final KbPromptMessageBox pwDialog = new KbPromptMessageBox("Room Password",
+                "Enter password for new room " + aRoomName);
+        pwDialog.addHideHandler(new HideHandler()
+        {
+
+            @Override
+            public void onHide(final HideEvent aEvent)
+            {
+                if (pwDialog.getHideButton() != pwDialog.getButtonById(PredefinedButton.OK.name()))
+                    return;
+
+                final String pw = pwDialog.getTextFieldValue();
+                if (pw != null && !pw.isEmpty())
+                {
+                    SynchroBus.get().fireEvent(new NewRoomInputEvent(aRoomName, pw));
+                }
+            }
+        });
+        pwDialog.show();
+        pwDialog.grabFocus();
     }
 }

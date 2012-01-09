@@ -9,5 +9,6 @@ public interface ISynchroImages extends ClientBundle
     ImageResource disconnect();
     ImageResource door_out();
     ImageResource information();
+    ImageResource lock_add();
     ImageResource user_gray();
 }
