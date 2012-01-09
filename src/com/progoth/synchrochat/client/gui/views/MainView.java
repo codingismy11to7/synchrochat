@@ -9,6 +9,7 @@ import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.gui.controllers.LoginController;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.progoth.synchrochat.client.gui.widgets.MainTabPanel;
+import com.progoth.synchrochat.client.gui.widgets.PersonListPanel;
 import com.progoth.synchrochat.client.gui.widgets.RoomListPanel;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 import com.sencha.gxt.core.client.util.Margins;
@@ -41,6 +42,7 @@ public class MainView extends ContentPanel
 
         createTop(cont);
         createLeft(cont);
+        createRight(cont);
 
         cont.setCenterWidget(new MainTabPanel(), new MarginData());
 
@@ -58,6 +60,19 @@ public class MainView extends ContentPanel
         layout.setMargins(new Margins(0, 5, 0, 0));
 
         aContainer.setWestWidget(new RoomListPanel(), layout);
+    }
+
+    private void createRight(final BorderLayoutContainer aContainer)
+    {
+        final BorderLayoutData layout = new BorderLayoutData(200);
+        // layout.setMinSize(100);
+        // layout.setMaxSize(600);
+        layout.setCollapsible(true);
+        layout.setSplit(true);
+        layout.setCollapseMini(true);
+        layout.setMargins(new Margins(0, 0, 0, 5));
+
+        aContainer.setEastWidget(new PersonListPanel(), layout);
     }
 
     private void createTop(final BorderLayoutContainer aContainer)
