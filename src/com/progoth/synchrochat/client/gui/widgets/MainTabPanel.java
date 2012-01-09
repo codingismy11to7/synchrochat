@@ -31,5 +31,9 @@ public class MainTabPanel extends TabPanel
         final TabItemConfig ovConf = new TabItemConfig("Overview", false);
         ovConf.setIcon(SynchroImages.get().information());
         add(overview, ovConf);
+
+        final TabItemConfig tmp = new TabItemConfig("blah", true);
+        tmp.setIcon(SynchroImages.get().comments());
+        add(new ChatPanel(), tmp);
     }
 }
