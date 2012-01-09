@@ -2,9 +2,24 @@ package com.progoth.synchrochat.shared.model;
 
 import java.io.Serializable;
 
+import com.google.gwt.editor.client.Editor.Path;
+import com.sencha.gxt.core.client.ValueProvider;
+import com.sencha.gxt.data.shared.ModelKeyProvider;
+import com.sencha.gxt.data.shared.PropertyAccess;
+
 public class ChatRoom implements Comparable<ChatRoom>, Serializable
 {
     private static final long serialVersionUID = 2647307916701864970L;
+
+    public static interface Properties extends PropertyAccess<ChatRoom>
+    {
+        @Path("name")
+        ModelKeyProvider<ChatRoom> key();
+
+        ValueProvider<ChatRoom, String> name();
+
+        ValueProvider<ChatRoom, Integer> userCount();
+    }
 
     private String m_name;
     private int m_userCount;

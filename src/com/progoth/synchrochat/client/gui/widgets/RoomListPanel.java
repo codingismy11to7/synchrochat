@@ -13,7 +13,6 @@ import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.progoth.synchrochat.shared.model.ChatRoom;
-import com.progoth.synchrochat.shared.model.ChatRoomProperties;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.widget.core.client.ContentPanel;
@@ -41,7 +40,7 @@ import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
 public class RoomListPanel extends ContentPanel
 {
-    private static final ChatRoomProperties sm_props = GWT.create(ChatRoomProperties.class);
+    private static final ChatRoom.Properties sm_props = GWT.create(ChatRoom.Properties.class);
 
     private ListStore<ChatRoom> m_rooms;
 
