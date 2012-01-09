@@ -3,6 +3,7 @@ package com.progoth.synchrochat.client.gui.controllers;
 import com.google.gwt.user.client.Window;
 import com.progoth.synchrochat.client.events.LoginResponseReceivedEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
+import com.progoth.synchrochat.client.rpc.ReallyDontCareCallback;
 import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
 import com.progoth.synchrochat.client.rpc.SynchroRpc;
 import com.progoth.synchrochat.shared.model.LoginResponse;
@@ -18,7 +19,7 @@ public class LoginController
 
     private static void doLogout(final boolean aRedirect)
     {
-        SynchroRpc.get().logout(new SimpleAsyncCallback<Void>()
+        SynchroRpc.get().logout(new ReallyDontCareCallback<Void>()
         {
             @Override
             public void onSuccess(final Void aResult)

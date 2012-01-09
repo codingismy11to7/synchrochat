@@ -94,6 +94,7 @@ public class RoomListPanel extends ContentPanel
         grid.getView().setForceFit(true);
         grid.setBorders(false);
         grid.setHideHeaders(true);
+        grid.setStripeRows(true);
         grid.setSelectionModel(new GridSelectionModel<ChatRoom>());
         grid.addRowDoubleClickHandler(new RowDoubleClickHandler()
         {
