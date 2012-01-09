@@ -9,11 +9,11 @@ import com.progoth.synchrochat.shared.model.LoginResponse;
 /**
  * The async counterpart of <code>GreetingService</code>.
  */
-public interface GreetingServiceAsync
+public interface SynchrochatServiceAsync
 {
     void getRoomList(AsyncCallback<SortedSet<ChatRoom>> callback);
 
-    void greetServer(String requestUri, String name, AsyncCallback<LoginResponse> callback);
+    void greetServer(String requestUri, AsyncCallback<LoginResponse> callback);
 
     void logout(AsyncCallback<Void> callback);
 

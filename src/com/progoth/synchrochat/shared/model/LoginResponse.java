@@ -11,6 +11,7 @@ public class LoginResponse implements Serializable
     private String m_logoutUrl;
     private String m_emailAddress;
     private String m_nickname;
+    private String m_message;
 
     public String getEmailAddress()
     {
@@ -25,6 +26,11 @@ public class LoginResponse implements Serializable
     public String getLogoutUrl()
     {
         return m_logoutUrl;
+    }
+
+    public String getMessage()
+    {
+        return m_message;
     }
 
     public String getNickname()
@@ -55,6 +61,11 @@ public class LoginResponse implements Serializable
     public void setLogoutUrl(final String aLogoutUrl)
     {
         m_logoutUrl = aLogoutUrl;
+    }
+
+    public void setMessage(final String aMessage)
+    {
+        m_message = aMessage;
     }
 
     public void setNickname(final String aNickname)

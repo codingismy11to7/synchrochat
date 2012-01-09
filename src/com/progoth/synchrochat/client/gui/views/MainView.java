@@ -3,22 +3,24 @@ package com.progoth.synchrochat.client.gui.views;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Window;
-import com.progoth.synchrochat.client.SynchroController;
+import com.google.gwt.user.client.ui.Label;
 import com.progoth.synchrochat.client.events.LoginResponseReceivedEvent;
+import com.progoth.synchrochat.client.events.SynchroBus;
+import com.progoth.synchrochat.client.gui.controllers.LoginController;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
+import com.progoth.synchrochat.client.gui.widgets.MainTabPanel;
 import com.progoth.synchrochat.client.gui.widgets.RoomListPanel;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 import com.sencha.gxt.core.client.util.Margins;
+import com.sencha.gxt.core.client.util.Padding;
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.BorderLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.BorderLayoutContainer.BorderLayoutData;
-import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
+import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutData;
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer.HBoxLayoutAlign;
 import com.sencha.gxt.widget.core.client.container.MarginData;
-import com.sencha.gxt.widget.core.client.container.SimpleContainer;
-import com.sencha.gxt.widget.core.client.info.Info;
 import com.sencha.gxt.widget.core.client.menu.Menu;
 import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
@@ -40,10 +42,7 @@ public class MainView extends ContentPanel
         createTop(cont);
         createLeft(cont);
 
-        final SimpleContainer sc = new SimpleContainer();
-        sc.setResize(false);
-        sc.add(new TextButton("o hai"), new MarginData(20));
-        cont.setCenterWidget(sc, new MarginData());
+        cont.setCenterWidget(new MainTabPanel(), new MarginData());
 
         add(cont);
     }
@@ -64,7 +63,7 @@ public class MainView extends ContentPanel
     private void createTop(final BorderLayoutContainer aContainer)
     {
         final HBoxLayoutContainer north = new HBoxLayoutContainer(HBoxLayoutAlign.MIDDLE);
-        north.setPack(BoxLayoutPack.END);
+        north.setPadding(new Padding(5));
 
         final Menu soMenu = new Menu();
         final MenuItem logoutMenuItem = new MenuItem("Sign Out", new SelectionHandler<MenuItem>()
@@ -72,7 +71,7 @@ public class MainView extends ContentPanel
             @Override
             public void onSelection(final SelectionEvent<MenuItem> aEvent)
             {
-                Info.display("sign out", "now");
+                LoginController.logout(true, true);
             }
         });
         logoutMenuItem.setIcon(SynchroImages.get().disconnect());
@@ -80,19 +79,25 @@ public class MainView extends ContentPanel
         final TextButton signOutButton = new TextButton("me");
         signOutButton.setIcon(SynchroImages.get().user_gray());
         signOutButton.setMenu(soMenu);
-        SynchroController.get().addHandler(LoginResponseReceivedEvent.TYPE,
+        SynchroBus.get().addHandler(LoginResponseReceivedEvent.TYPE,
             new LoginResponseReceivedEvent.Handler()
             {
                 @Override
                 public void loginReceived(final LoginResponse aResponse)
                 {
                     signOutButton.setText(aResponse.getNickname());
+                    north.forceLayout();
+                    signOutButton.redraw();
                 }
             });
 
-        final BorderLayoutData layout = new BorderLayoutData(28);
+        BoxLayoutData bld = new BoxLayoutData(new Margins());
+        bld.setFlex(1);
+        north.add(new Label(), bld);
+        north.add(signOutButton, new BoxLayoutData(new Margins(0, 5, 0, 0)));
+
+        final BorderLayoutData layout = new BorderLayoutData(32);
         layout.setCollapsible(false);
-        layout.setMargins(new Margins(5));
 
         aContainer.setNorthWidget(north, layout);
     }

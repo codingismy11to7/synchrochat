@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.progoth.synchrochat.client.events.ChatMessageSendEvent;
+import com.progoth.synchrochat.client.events.SynchroBus;
 
 public class ChatPanel extends SplitLayoutPanel
 {
@@ -92,7 +93,7 @@ public class ChatPanel extends SplitLayoutPanel
         m_input.setText("");
         if (!msg.isEmpty())
         {
-            SynchroController.get().fireEvent(new ChatMessageSendEvent(msg));
+            SynchroBus.get().fireEvent(new ChatMessageSendEvent(msg));
         }
 
         focusInput();

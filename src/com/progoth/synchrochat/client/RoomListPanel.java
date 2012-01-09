@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.progoth.synchrochat.client.events.RoomListReceivedEvent;
+import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 
 public class RoomListPanel extends DockLayoutPanel implements RoomListReceivedEvent.Handler
@@ -23,7 +24,7 @@ public class RoomListPanel extends DockLayoutPanel implements RoomListReceivedEv
     {
         super(Unit.PX);
 
-        SynchroController.get().addHandler(RoomListReceivedEvent.TYPE, this);
+        SynchroBus.get().addHandler(RoomListReceivedEvent.TYPE, this);
 
         final HorizontalPanel horizontalPanel = new HorizontalPanel();
         horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);

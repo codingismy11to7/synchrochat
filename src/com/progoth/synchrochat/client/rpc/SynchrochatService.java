@@ -10,12 +10,12 @@ import com.progoth.synchrochat.shared.model.LoginResponse;
 /**
  * The client side stub for the RPC service.
  */
-@RemoteServiceRelativePath("greet")
-public interface GreetingService extends RemoteService
+@RemoteServiceRelativePath("synchrochat")
+public interface SynchrochatService extends RemoteService
 {
     SortedSet<ChatRoom> getRoomList();
 
-    LoginResponse greetServer(String requestUri, String name) throws IllegalArgumentException;
+    LoginResponse greetServer(String requestUri) throws IllegalArgumentException;
 
     void logout();
 

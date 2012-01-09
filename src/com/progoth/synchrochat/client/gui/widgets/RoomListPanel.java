@@ -6,9 +6,9 @@ import java.util.List;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.HasDirection.Direction;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
-import com.progoth.synchrochat.client.SynchroController;
 import com.progoth.synchrochat.client.events.NewRoomInputEvent;
 import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
+import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.ChatRoomProperties;
@@ -95,7 +95,7 @@ public class RoomListPanel extends ContentPanel
             @Override
             public void onRowDoubleClick(final RowDoubleClickEvent aEvent)
             {
-                SynchroController.get().fireEvent(
+                SynchroBus.get().fireEvent(
                     new RoomJoinRequestEvent(grid.getSelectionModel().getSelectedItem()));
             }
         });
@@ -123,7 +123,7 @@ public class RoomListPanel extends ContentPanel
                             roomName = roomName.trim();
                             if (!roomName.isEmpty())
                             {
-                                SynchroController.get().fireEvent(new NewRoomInputEvent(roomName));
+                                SynchroBus.get().fireEvent(new NewRoomInputEvent(roomName));
                             }
                         }
                     }

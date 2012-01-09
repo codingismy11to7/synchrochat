@@ -27,10 +27,11 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.progoth.synchrochat.client.events.ChatMessageSendEvent;
 import com.progoth.synchrochat.client.events.RoomListReceivedEvent;
+import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener.ClosedListener;
-import com.progoth.synchrochat.client.rpc.GreetingService;
-import com.progoth.synchrochat.client.rpc.GreetingServiceAsync;
+import com.progoth.synchrochat.client.rpc.SynchrochatService;
+import com.progoth.synchrochat.client.rpc.SynchrochatServiceAsync;
 import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
@@ -43,7 +44,7 @@ public class Synchrochat implements EntryPoint
     /**
      * Create a remote service proxy to talk to the server-side Greeting service.
      */
-    private final GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
+    private final SynchrochatServiceAsync greetingService = GWT.create(SynchrochatService.class);
     private LoginResponse m_loginInfo;
 
     private ListBox m_roomList;
@@ -67,7 +68,7 @@ public class Synchrochat implements EntryPoint
     {
         m_roomList.clear();
         for (ChatRoom room : aRooms) m_roomList.addItem(room.getName());
-        SynchroController.get().fireEvent(new RoomListReceivedEvent(aRooms));
+        SynchroBus.get().fireEvent(new RoomListReceivedEvent(aRooms));
     }
 
     /**
@@ -163,7 +164,7 @@ public class Synchrochat implements EntryPoint
 
         m_chatPanel = new ChatPanel();
         m_chatPanel.append(m_loginInfo.getNickname());
-        SynchroController.get().addHandler(ChatMessageSendEvent.TYPE,
+        SynchroBus.get().addHandler(ChatMessageSendEvent.TYPE,
             new ChatMessageSendEvent.Handler()
             {
                 @Override
@@ -237,7 +238,7 @@ public class Synchrochat implements EntryPoint
     @Override
     public void onModuleLoad()
     {
-        greetingService.greetServer(Window.Location.getHref(), "blah",
+        greetingService.greetServer(Window.Location.getHref(),
             new SimpleAsyncCallback<LoginResponse>()
             {
                 @Override

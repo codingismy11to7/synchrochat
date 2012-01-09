@@ -11,8 +11,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.progoth.synchrochat.client.rpc.GreetingService;
-import com.progoth.synchrochat.shared.FieldVerifier;
+import com.progoth.synchrochat.client.rpc.SynchrochatService;
 import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
@@ -20,7 +19,7 @@ import com.progoth.synchrochat.shared.model.LoginResponse;
 /**
  * The server side implementation of the RPC service.
  */
-public class GreetingServiceImpl extends RemoteServiceServlet implements GreetingService
+public class SynchrochatServiceImpl extends RemoteServiceServlet implements SynchrochatService
 {
     private static final long serialVersionUID = 8471232977034188023L;
 
@@ -37,15 +36,9 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
     }
 
     @Override
-    public LoginResponse greetServer(final String requestUri, final String input)
+    public LoginResponse greetServer(final String requestUri)
             throws IllegalArgumentException
     {
-        // Verify that the input is valid.
-        if (!FieldVerifier.isValidName(input))
-            // If the input is not valid, throw an IllegalArgumentException back to
-            // the client.
-            throw new IllegalArgumentException("Name must be at least 4 characters long");
-
         final User user = getUser();
         final UserService userService = UserServiceFactory.getUserService();
 
@@ -69,7 +62,8 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements Greetin
             resp.setLoggedIn(true);
             resp.setLogoutUrl(userService.createLogoutURL(requestUri));
             resp.setEmailAddress(user.getEmail());
-            resp.setNickname("Hello, " + user.getNickname() + "!\n\nI am running " + serverInfo
+            resp.setNickname(user.getNickname());
+            resp.setMessage("Hello, " + user.getNickname() + "!\n\nI am running " + serverInfo
                     + ".\n\nIt looks like you are using:\n" + y.asString());
 
             SynchroSessions.get().startSession();
