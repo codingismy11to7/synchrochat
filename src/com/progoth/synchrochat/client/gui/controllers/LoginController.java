@@ -73,7 +73,8 @@ public class LoginController
         else
         {
             final ConfirmMessageBox confirm = new ConfirmMessageBox("Sign out",
-                    "Are you sure you want to sign out?<br/>This will log you out of all Google services!");
+                    "Are you sure you want to sign out?<br/>"
+                            + "This will log you out of all Google services!");
             confirm.addHideHandler(new HideHandler()
             {
                 @Override

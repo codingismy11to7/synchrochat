@@ -55,7 +55,7 @@ public class MainView extends ContentPanel
         layout.setCollapsible(true);
         layout.setSplit(true);
         layout.setCollapseMini(true);
-        layout.setMargins(new Margins(0));
+        layout.setMargins(new Margins(0, 5, 0, 0));
 
         aContainer.setWestWidget(new RoomListPanel(), layout);
     }
