@@ -27,6 +27,8 @@ public class SynchroChat implements EntryPoint, NewRoomInputEvent.Handler,
     @Override
     public void onModuleLoad()
     {
+        LoginController.login();
+
         final Viewport viewport = new Viewport();
         viewport.add(new MainView());
         RootPanel.get().add(viewport);
@@ -42,8 +44,6 @@ public class SynchroChat implements EntryPoint, NewRoomInputEvent.Handler,
                 LoginController.logout(false, false);
             }
         });
-
-        LoginController.login();
     }
 
     @Override
