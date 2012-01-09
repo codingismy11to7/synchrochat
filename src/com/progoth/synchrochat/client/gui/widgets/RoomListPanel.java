@@ -10,6 +10,7 @@ import com.google.gwt.i18n.client.HasDirection.Direction;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.progoth.synchrochat.client.events.NewRoomInputEvent;
 import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
+import com.progoth.synchrochat.client.events.RoomListReceivedEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.progoth.synchrochat.shared.model.ChatRoom;
@@ -56,23 +57,21 @@ public class RoomListPanel extends ContentPanel
         createCenter(container);
 
         add(container);
+
+        SynchroBus.get().addHandler(RoomListReceivedEvent.TYPE, new RoomListReceivedEvent.Handler()
+        {
+            @Override
+            public void onRoomListReceived(RoomListReceivedEvent aEvt)
+            {
+                m_rooms.clear();
+                m_rooms.addAll(aEvt.getRoomList());
+            }
+        });
     }
 
     private void createCenter(final BorderLayoutContainer aContainer)
     {
         m_rooms = new ListStore<ChatRoom>(sm_props.key());
-        ChatRoom room = new ChatRoom();
-        room.setName("a room");
-        room.setUserCount(500);
-        m_rooms.add(room);
-        room = new ChatRoom();
-        room.setName("blah");
-        room.setUserCount(0);
-        m_rooms.add(room);
-        room = new ChatRoom();
-        room.setName("blah2");
-        room.setUserCount(10);
-        m_rooms.add(room);
 
         final List<ColumnConfig<ChatRoom, ?>> colConfigs = new LinkedList<ColumnConfig<ChatRoom, ?>>();
         ColumnConfig<ChatRoom, ?> col;

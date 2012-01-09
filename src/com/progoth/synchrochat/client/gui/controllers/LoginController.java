@@ -15,9 +15,21 @@ import com.sencha.gxt.widget.core.client.event.HideEvent.HideHandler;
 
 public class LoginController
 {
-    private static String sm_logoutUrl = null;
+    private static final LoginController sm_instance = new LoginController();
 
-    private static void doLogout(final boolean aRedirect)
+    public static LoginController get()
+    {
+        return sm_instance;
+    }
+
+    private String sm_logoutUrl = null;
+
+    private LoginController()
+    {
+        // singleton
+    }
+
+    private void doLogout(final boolean aRedirect)
     {
         SynchroRpc.get().logout(new ReallyDontCareCallback<Void>()
         {
@@ -32,7 +44,7 @@ public class LoginController
         });
     }
 
-    public static void login()
+    public void login()
     {
         if (sm_logoutUrl != null)
         {
@@ -59,7 +71,7 @@ public class LoginController
             });
     }
 
-    public static void logout(final boolean aConfirm, final boolean aRedirect)
+    public void logout(final boolean aConfirm, final boolean aRedirect)
     {
         if (sm_logoutUrl == null)
         {

@@ -86,7 +86,7 @@ public class MainView extends ContentPanel
             @Override
             public void onSelection(final SelectionEvent<MenuItem> aEvent)
             {
-                LoginController.logout(true, true);
+                LoginController.get().logout(true, true);
             }
         });
         logoutMenuItem.setIcon(SynchroImages.get().disconnect());

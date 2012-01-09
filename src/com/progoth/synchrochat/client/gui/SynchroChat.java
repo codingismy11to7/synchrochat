@@ -9,6 +9,7 @@ import com.progoth.synchrochat.client.events.NewRoomInputEvent;
 import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.gui.controllers.LoginController;
+import com.progoth.synchrochat.client.gui.controllers.RoomController;
 import com.progoth.synchrochat.client.gui.views.MainView;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.sencha.gxt.widget.core.client.container.Viewport;
@@ -27,7 +28,7 @@ public class SynchroChat implements EntryPoint, NewRoomInputEvent.Handler,
     @Override
     public void onModuleLoad()
     {
-        LoginController.login();
+        LoginController.get().login();
 
         final Viewport viewport = new Viewport();
         viewport.add(new MainView());
@@ -36,12 +37,14 @@ public class SynchroChat implements EntryPoint, NewRoomInputEvent.Handler,
         SynchroBus.get().addHandler(NewRoomInputEvent.TYPE, this);
         SynchroBus.get().addHandler(RoomJoinRequestEvent.TYPE, this);
 
+        RoomController.get().getRoomList();
+
         Window.addWindowClosingHandler(new ClosingHandler()
         {
             @Override
             public void onWindowClosing(final ClosingEvent aEvent)
             {
-                LoginController.logout(false, false);
+                LoginController.get().logout(false, false);
             }
         });
     }

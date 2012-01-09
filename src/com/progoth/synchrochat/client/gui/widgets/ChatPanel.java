@@ -1,5 +1,7 @@
 package com.progoth.synchrochat.client.gui.widgets;
 
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.sencha.gxt.cell.core.client.ButtonCell.IconAlign;
 import com.sencha.gxt.core.client.util.Margins;
@@ -32,22 +34,32 @@ public class ChatPanel extends BorderLayoutContainer
         bld.setSplit(true);
         bld.setMinSize(65);
 
-        TextButton send = new TextButton("Send", new SelectHandler()
+        final TextButton send = new TextButton("Send", new SelectHandler()
         {
             @Override
-            public void onSelect(SelectEvent aEvent)
+            public void onSelect(final SelectEvent aEvent)
             {
                 input.setValue(null);
             }
         });
         send.setIcon(SynchroImages.get().font_go());
-        send.setIconAlign(IconAlign.BOTTOM);
+        send.setIconAlign(IconAlign.TOP);
 
-        HBoxLayoutContainer horiz = new HBoxLayoutContainer(HBoxLayoutAlign.TOP);
-        BoxLayoutData flex = new BoxLayoutData(new Margins());
+        final HBoxLayoutContainer horiz = new HBoxLayoutContainer(HBoxLayoutAlign.TOP);
+        final BoxLayoutData flex = new BoxLayoutData(new Margins());
         flex.setFlex(1);
         horiz.add(input, flex);
         horiz.add(send, new BoxLayoutData(new Margins(0, 5, 0, 5)));
+
+        horiz.addResizeHandler(new ResizeHandler()
+        {
+            @Override
+            public void onResize(ResizeEvent aEvent)
+            {
+                horiz.forceLayout();
+                send.redraw();
+            }
+        });
 
         setSouthWidget(horiz, bld);
     }
