@@ -1,5 +1,6 @@
 package com.progoth.synchrochat.server;
 
+import java.util.Set;
 import java.util.SortedSet;
 
 import no.eirikb.gwtchannelapi.server.ChannelServer;
@@ -8,6 +9,7 @@ import com.google.appengine.api.channel.ChannelServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.collect.Sets;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -15,6 +17,8 @@ import com.progoth.synchrochat.client.rpc.SynchrochatService;
 import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
+import com.progoth.synchrochat.shared.model.Pair;
+import com.progoth.synchrochat.shared.model.SynchroUser;
 
 /**
  * The server side implementation of the RPC service.
@@ -35,9 +39,19 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
         return userService.getCurrentUser();
     }
 
+    private SortedSet<SynchroUser> getUserList(final ChatRoom aRoom)
+    {
+        final Set<String> users = RoomList.get().getSubscribedUsers(aRoom.getName());
+        final SortedSet<SynchroUser> ret = Sets.newTreeSet();
+        for (final String userId : users)
+        {
+            ret.add(SynchroSessions.get().getSession(userId).getSynchroUser());
+        }
+        return ret;
+    }
+
     @Override
-    public LoginResponse greetServer(final String requestUri)
-            throws IllegalArgumentException
+    public LoginResponse greetServer(final String requestUri) throws IllegalArgumentException
     {
         final User user = getUser();
         final UserService userService = UserServiceFactory.getUserService();
@@ -85,20 +99,21 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     }
 
     @Override
-    public void sendMsg(final String aChannel, final String aMsg)
+    public void sendMsg(final ChatRoom aRoom, final String aMsg)
     {
-        final ChatMessage msg = new ChatMessage(aChannel, aMsg, getUser().getNickname());
-        for (final String user : RoomList.get().getSubscribedUsers(aChannel))
+        final ChatMessage msg = new ChatMessage(aRoom.getName(), aMsg, getUser().getNickname());
+        for (final String user : RoomList.get().getSubscribedUsers(aRoom.getName()))
         {
             ChannelServer.send(user, msg);
         }
     }
 
     @Override
-    public SortedSet<ChatRoom> subscribe(final String aName)
+    public Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>> subscribe(final ChatRoom aRoom)
     {
-        final RoomList rl = SynchroSessions.get().addUserToRoom(aName.trim());
+        final RoomList rl = SynchroSessions.get().addUserToRoom(aRoom);
 
-        return rl.getRooms();
+        return new Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>>(rl.getRooms(),
+                getUserList(aRoom));
     }
 }

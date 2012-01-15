@@ -5,6 +5,8 @@ import java.util.SortedSet;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
+import com.progoth.synchrochat.shared.model.Pair;
+import com.progoth.synchrochat.shared.model.SynchroUser;
 
 /**
  * The async counterpart of <code>GreetingService</code>.
@@ -19,7 +21,8 @@ public interface SynchrochatServiceAsync
 
     void openChannel(AsyncCallback<String> callback);
 
-    void sendMsg(String channel, String msg, AsyncCallback<Void> callback);
+    void sendMsg(ChatRoom channel, String msg, AsyncCallback<Void> callback);
 
-    void subscribe(String aRoomName, AsyncCallback<SortedSet<ChatRoom>> callback);
+    void subscribe(ChatRoom aRoom,
+            AsyncCallback<Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>>> callback);
 }

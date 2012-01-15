@@ -9,8 +9,6 @@ import com.sencha.gxt.data.shared.PropertyAccess;
 
 public class ChatRoom implements Comparable<ChatRoom>, Serializable
 {
-    private static final long serialVersionUID = 2647307916701864970L;
-
     public static interface Properties extends PropertyAccess<ChatRoom>
     {
         @Path("name")
@@ -21,8 +19,29 @@ public class ChatRoom implements Comparable<ChatRoom>, Serializable
         ValueProvider<ChatRoom, Integer> userCount();
     }
 
+    private static final long serialVersionUID = 2647307916701864970L;
+
     private String m_name;
     private int m_userCount;
+    private boolean m_passwordRequired = false;
+    private String m_password;
+
+    public ChatRoom()
+    {
+        this(null);
+    }
+
+    public ChatRoom(final String aRoomName)
+    {
+        m_name = aRoomName;
+        m_userCount = 0;
+    }
+
+    public ChatRoom(final String aRoomName, final String aPassword)
+    {
+        this(aRoomName);
+        setPassword(aPassword);
+    }
 
     @Override
     public int compareTo(final ChatRoom aO)
@@ -55,6 +74,11 @@ public class ChatRoom implements Comparable<ChatRoom>, Serializable
         return m_name;
     }
 
+    public String getPassword()
+    {
+        return m_password;
+    }
+
     public int getUserCount()
     {
         return m_userCount;
@@ -69,9 +93,25 @@ public class ChatRoom implements Comparable<ChatRoom>, Serializable
         return result;
     }
 
+    public boolean isPasswordRequired()
+    {
+        return m_passwordRequired;
+    }
+
     public void setName(final String aName)
     {
         m_name = aName;
+    }
+
+    public void setPassword(final String aPassword)
+    {
+        m_password = aPassword;
+        m_passwordRequired = (aPassword != null && !aPassword.isEmpty());
+    }
+
+    public void setPasswordRequired(final boolean aPasswordRequired)
+    {
+        m_passwordRequired = aPasswordRequired;
     }
 
     public void setUserCount(final int aUserCount)

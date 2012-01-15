@@ -30,11 +30,13 @@ import com.progoth.synchrochat.client.events.RoomListReceivedEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener.ClosedListener;
+import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
 import com.progoth.synchrochat.client.rpc.SynchrochatService;
 import com.progoth.synchrochat.client.rpc.SynchrochatServiceAsync;
-import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
+import com.progoth.synchrochat.shared.model.Pair;
+import com.progoth.synchrochat.shared.model.SynchroUser;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -53,12 +55,14 @@ public class Synchrochat implements EntryPoint
 
     private void subscribe(final String aRoomName)
     {
-        greetingService.subscribe(aRoomName.trim(), new SimpleAsyncCallback<SortedSet<ChatRoom>>()
+        ChatRoom tmp = new ChatRoom(aRoomName.trim());
+        greetingService.subscribe(tmp,
+            new SimpleAsyncCallback<Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>>>()
         {
             @Override
-            public void onSuccess(final SortedSet<ChatRoom> aResult)
+            public void onSuccess(final Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>> aResult)
             {
-                onRoomsReceived(aResult);
+                onRoomsReceived(aResult.getA());
                 m_chatPanel.append("Joined " + aRoomName.trim());
             }
         });
@@ -179,7 +183,9 @@ public class Synchrochat implements EntryPoint
                         room = m_roomList.getItemText(idx);
                     }
 
-                    greetingService.sendMsg(room, aEvt.getMessage(),
+                    ChatRoom tmp = new ChatRoom();
+                    tmp.setName(room);
+                    greetingService.sendMsg(tmp, aEvt.getMessage(),
                         new SimpleAsyncCallback<Void>()
                         {
                             @Override

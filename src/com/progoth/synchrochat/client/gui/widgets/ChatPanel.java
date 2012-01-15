@@ -3,6 +3,7 @@ package com.progoth.synchrochat.client.gui.widgets;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
+import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.sencha.gxt.cell.core.client.ButtonCell.IconAlign;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.button.TextButton;
@@ -18,8 +19,11 @@ import com.sencha.gxt.widget.core.client.form.TextArea;
 
 public class ChatPanel extends BorderLayoutContainer
 {
-    public ChatPanel()
+    private final ChatRoom m_room;
+
+    public ChatPanel(final ChatRoom aRoom)
     {
+        m_room = aRoom;
         createBottom();
         createCenter();
     }
@@ -54,7 +58,7 @@ public class ChatPanel extends BorderLayoutContainer
         horiz.addResizeHandler(new ResizeHandler()
         {
             @Override
-            public void onResize(ResizeEvent aEvent)
+            public void onResize(final ResizeEvent aEvent)
             {
                 horiz.forceLayout();
                 send.redraw();
@@ -70,5 +74,10 @@ public class ChatPanel extends BorderLayoutContainer
         output.setText("lorem ipsum");
 
         setCenterWidget(output, new MarginData(new Margins()));
+    }
+
+    public ChatRoom getRoom()
+    {
+        return m_room;
     }
 }

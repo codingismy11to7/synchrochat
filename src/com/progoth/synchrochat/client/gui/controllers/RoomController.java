@@ -10,9 +10,12 @@ import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
 import com.progoth.synchrochat.client.events.RoomJoinedEvent;
 import com.progoth.synchrochat.client.events.RoomListReceivedEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
+import com.progoth.synchrochat.client.events.UserListReceivedEvent;
 import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
 import com.progoth.synchrochat.client.rpc.SynchroRpc;
 import com.progoth.synchrochat.shared.model.ChatRoom;
+import com.progoth.synchrochat.shared.model.Pair;
+import com.progoth.synchrochat.shared.model.SynchroUser;
 import com.sencha.gxt.widget.core.client.info.Info;
 
 public class RoomController implements NewRoomInputEvent.Handler, RoomJoinRequestEvent.Handler
@@ -59,15 +62,19 @@ public class RoomController implements NewRoomInputEvent.Handler, RoomJoinReques
     @Override
     public void newRoomRequested(final String aRoomName, final String aPassword)
     {
-        SynchroRpc.get().subscribe(aRoomName, new SimpleAsyncCallback<SortedSet<ChatRoom>>()
-        {
-            @Override
-            public void onSuccess(final SortedSet<ChatRoom> aResult)
+        SynchroRpc.get().subscribe(new ChatRoom(aRoomName, aPassword),
+            new SimpleAsyncCallback<Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>>>()
             {
-                m_roomsRcvdHandler.onSuccess(aResult);
-                SynchroBus.get().fireEvent(new RoomJoinedEvent(m_currentRooms.get(aRoomName)));
-            }
-        });
+                @Override
+                public void onSuccess(
+                        final Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>> aResult)
+                {
+                    m_roomsRcvdHandler.onSuccess(aResult.getA());
+                    final ChatRoom room = m_currentRooms.get(aRoomName);
+                    SynchroBus.get().fireEvent(new RoomJoinedEvent(room));
+                    SynchroBus.get().fireEvent(new UserListReceivedEvent(room, aResult.getB()));
+                }
+            });
     }
 
     @Override

@@ -14,6 +14,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.progoth.synchrochat.shared.model.ChatRoom;
 
 @PersistenceCapable
 public class SynchroSessions implements Serializable
@@ -67,15 +68,15 @@ public class SynchroSessions implements Serializable
     @PrimaryKey
     private String m_key = KEY;
 
-    @Persistent(serialized="true")
+    @Persistent(serialized = "true")
     private Map<String, ClientSession> m_sessions = new HashMap<String, ClientSession>();
 
-    public RoomList addUserToRoom(final String aRoom)
+    public RoomList addUserToRoom(final ChatRoom aRoom)
     {
         final ClientSession session = getSession();
 
         final RoomList rl = RoomList.get();
-        rl.addUserToRoom(aRoom, session.getUser().getUserId());
+        rl.addUserToRoom(aRoom.getName(), session.getUser().getUserId());
 
         session.getRoomList().add(aRoom);
         persist();
@@ -104,6 +105,11 @@ public class SynchroSessions implements Serializable
     {
         final User user = sm_userService.getCurrentUser();
         return m_sessions.get(user.getUserId());
+    }
+
+    public ClientSession getSession(final String aUserId)
+    {
+        return m_sessions.get(aUserId);
     }
 
     @SuppressWarnings("unused")

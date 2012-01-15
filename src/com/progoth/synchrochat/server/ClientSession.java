@@ -2,11 +2,13 @@ package com.progoth.synchrochat.server;
 
 import java.io.Serializable;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.collect.Sets;
+import com.progoth.synchrochat.shared.model.ChatRoom;
+import com.progoth.synchrochat.shared.model.SynchroUser;
 
 public class ClientSession implements Serializable
 {
@@ -14,18 +16,25 @@ public class ClientSession implements Serializable
 
     private static final UserService sm_userService = UserServiceFactory.getUserService();
 
-    private SortedSet<String> m_roomList = new TreeSet<String>();
+    private SortedSet<ChatRoom> m_roomList = Sets.newTreeSet();
 
     private User m_user;
+    private SynchroUser m_synchroUser;
 
     public ClientSession()
     {
         m_user = sm_userService.getCurrentUser();
+        m_synchroUser = new SynchroUser(m_user.getNickname());
     }
 
-    public SortedSet<String> getRoomList()
+    public SortedSet<ChatRoom> getRoomList()
     {
         return m_roomList;
+    }
+
+    public SynchroUser getSynchroUser()
+    {
+        return m_synchroUser;
     }
 
     public User getUser()
@@ -34,9 +43,15 @@ public class ClientSession implements Serializable
     }
 
     @SuppressWarnings("unused")
-    private void setRoomList(final SortedSet<String> aRoomList)
+    private void setRoomList(final SortedSet<ChatRoom> aRoomList)
     {
         m_roomList = aRoomList;
+    }
+
+    @SuppressWarnings("unused")
+    private void setSynchroUser(final SynchroUser aSynchroUser)
+    {
+        m_synchroUser = aSynchroUser;
     }
 
     @SuppressWarnings("unused")

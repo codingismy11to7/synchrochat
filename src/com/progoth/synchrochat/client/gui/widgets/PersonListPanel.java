@@ -2,9 +2,12 @@ package com.progoth.synchrochat.client.gui.widgets;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.SortedSet;
 
 import com.google.gwt.core.client.GWT;
-import com.progoth.synchrochat.shared.model.User;
+import com.progoth.synchrochat.client.events.SynchroBus;
+import com.progoth.synchrochat.client.events.UserListDisplayEvent;
+import com.progoth.synchrochat.shared.model.SynchroUser;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
@@ -15,52 +18,45 @@ import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.GridSelectionModel;
 
-public class PersonListPanel extends ContentPanel
+public class PersonListPanel extends ContentPanel implements UserListDisplayEvent.Handler
 {
-    private static final User.Properties sm_props = GWT.create(User.Properties.class);
+    private static final SynchroUser.Properties sm_props = GWT.create(SynchroUser.Properties.class);
 
-    private ListStore<User> m_users;
+    private ListStore<SynchroUser> m_users;
 
     public PersonListPanel()
     {
         setHeadingText("Users");
 
-        SimpleContainer sc = new SimpleContainer();
+        final SimpleContainer sc = new SimpleContainer();
 
         createList(sc);
 
         add(sc);
+
+        SynchroBus.get().addHandler(UserListDisplayEvent.TYPE, this);
     }
 
-    private void createList(SimpleContainer aContainer)
+    private void createList(final SimpleContainer aContainer)
     {
-        m_users = new ListStore<User>(sm_props.key());
-        User user = new User();
-        user.setName("user1");
-        m_users.add(user);
-        user = new User();
-        user.setName("blahuser");
-        m_users.add(user);
-        user = new User();
-        user.setName("n00b");
-        m_users.add(user);
+        m_users = new ListStore<SynchroUser>(sm_props.key());
 
-        final List<ColumnConfig<User, ?>> colConfigs = new LinkedList<ColumnConfig<User, ?>>();
-        ColumnConfig<User, ?> col;
+        final List<ColumnConfig<SynchroUser, ?>> colConfigs = new LinkedList<ColumnConfig<SynchroUser, ?>>();
+        ColumnConfig<SynchroUser, ?> col;
 
-        col = new ColumnConfig<User, String>(sm_props.name(), 150, "Name");
-        final ColumnConfig<User, ?> nameCol = col;
+        col = new ColumnConfig<SynchroUser, String>(sm_props.name(), 150, "Name");
+        final ColumnConfig<SynchroUser, ?> nameCol = col;
         colConfigs.add(col);
 
-        final ColumnModel<User> cm = new ColumnModel<User>(colConfigs);
+        final ColumnModel<SynchroUser> cm = new ColumnModel<SynchroUser>(colConfigs);
 
-        final Grid<User> grid = new Grid<User>(m_users, cm);
+        final Grid<SynchroUser> grid = new Grid<SynchroUser>(m_users, cm);
         grid.getView().setAutoExpandColumn(nameCol);
         grid.getView().setForceFit(true);
         grid.setBorders(false);
         grid.setHideHeaders(true);
         grid.setStripeRows(true);
-        grid.setSelectionModel(new GridSelectionModel<User>());
+        grid.setSelectionModel(new GridSelectionModel<SynchroUser>());
         grid.addRowDoubleClickHandler(new RowDoubleClickHandler()
         {
             @Override
@@ -71,5 +67,15 @@ public class PersonListPanel extends ContentPanel
         });
 
         aContainer.add(grid);
+    }
+
+    @Override
+    public void displayUserList(final SortedSet<SynchroUser> aUserList)
+    {
+        m_users.clear();
+        if (aUserList != null)
+        {
+            m_users.addAll(aUserList);
+        }
     }
 }
