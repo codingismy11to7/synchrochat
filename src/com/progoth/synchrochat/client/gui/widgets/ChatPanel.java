@@ -2,7 +2,12 @@ package com.progoth.synchrochat.client.gui.widgets;
 
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
+import com.progoth.synchrochat.client.rpc.ReallyDontCareCallback;
+import com.progoth.synchrochat.client.rpc.SynchroRpc;
+import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.sencha.gxt.cell.core.client.ButtonCell.IconAlign;
 import com.sencha.gxt.core.client.util.Margins;
@@ -20,12 +25,24 @@ import com.sencha.gxt.widget.core.client.form.TextArea;
 public class ChatPanel extends BorderLayoutContainer
 {
     private final ChatRoom m_room;
+    private TextArea m_output;
 
     public ChatPanel(final ChatRoom aRoom)
     {
         m_room = aRoom;
         createBottom();
         createCenter();
+    }
+
+    public void addMessage(final ChatMessage aMessage)
+    {
+        final String dateTimeString = DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT).format(
+            aMessage.getDate())
+                + ' '
+                + DateTimeFormat.getFormat(PredefinedFormat.TIME_MEDIUM).format(aMessage.getDate());
+        final String line = dateTimeString + " [" + aMessage.getUser().getName() + "]: "
+                + aMessage.getMsg() + '\n';
+        m_output.setText(m_output.getText() + line);
     }
 
     private void createBottom()
@@ -43,6 +60,8 @@ public class ChatPanel extends BorderLayoutContainer
             @Override
             public void onSelect(final SelectEvent aEvent)
             {
+                SynchroRpc.get().sendMsg(m_room, input.getValue(),
+                    new ReallyDontCareCallback<Void>());
                 input.setValue(null);
             }
         });
@@ -70,10 +89,10 @@ public class ChatPanel extends BorderLayoutContainer
 
     private void createCenter()
     {
-        final TextArea output = new TextArea();
-        output.setText("lorem ipsum");
+        m_output = new TextArea();
+        // m_output.setText("lorem ipsum");
 
-        setCenterWidget(output, new MarginData(new Margins()));
+        setCenterWidget(m_output, new MarginData(new Margins()));
     }
 
     public ChatRoom getRoom()

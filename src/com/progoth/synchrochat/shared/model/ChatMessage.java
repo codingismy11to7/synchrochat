@@ -9,8 +9,8 @@ public class ChatMessage implements Message
     private static final long serialVersionUID = -5319350216421011538L;
 
     private String m_msg;
-    private String m_room;
-    private String m_user;
+    private ChatRoom m_room;
+    private SynchroUser m_user;
     private Date m_date;
 
     public ChatMessage()
@@ -18,7 +18,7 @@ public class ChatMessage implements Message
         this(null, null, null);
     }
 
-    public ChatMessage(final String aRoom, final String aMsg, final String aUser)
+    public ChatMessage(final ChatRoom aRoom, final String aMsg, final SynchroUser aUser)
     {
         m_room = aRoom;
         m_msg = aMsg;
@@ -36,12 +36,12 @@ public class ChatMessage implements Message
         return m_msg;
     }
 
-    public String getRoom()
+    public ChatRoom getRoom()
     {
         return m_room;
     }
 
-    public String getUser()
+    public SynchroUser getUser()
     {
         return m_user;
     }
@@ -56,12 +56,12 @@ public class ChatMessage implements Message
         m_msg = aMsg;
     }
 
-    public void setRoom(final String aRoom)
+    public void setRoom(final ChatRoom aRoom)
     {
         m_room = aRoom;
     }
 
-    public void setUser(final String aUser)
+    public void setUser(final SynchroUser aUser)
     {
         m_user = aUser;
     }

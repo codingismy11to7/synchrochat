@@ -61,6 +61,7 @@ public class LoginController
                     if (aResult.isLoggedIn())
                     {
                         sm_logoutUrl = aResult.getLogoutUrl();
+                        ChannelController.get();
                         SynchroBus.get().fireEvent(new LoginResponseReceivedEvent(aResult));
                     }
                     else

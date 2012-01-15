@@ -3,6 +3,7 @@ package com.progoth.synchrochat.client;
 import java.util.SortedSet;
 
 import no.eirikb.gwtchannelapi.client.Channel;
+import no.eirikb.gwtchannelapi.client.Message;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -11,6 +12,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
@@ -29,10 +32,11 @@ import com.progoth.synchrochat.client.events.ChatMessageSendEvent;
 import com.progoth.synchrochat.client.events.RoomListReceivedEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.rpc.ChatChannelListener;
-import com.progoth.synchrochat.client.rpc.ChatChannelListener.ClosedListener;
+import com.progoth.synchrochat.client.rpc.ChatChannelListener.ChannelListener;
 import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
 import com.progoth.synchrochat.client.rpc.SynchrochatService;
 import com.progoth.synchrochat.client.rpc.SynchrochatServiceAsync;
+import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 import com.progoth.synchrochat.shared.model.Pair;
@@ -216,12 +220,25 @@ public class Synchrochat implements EntryPoint
         });
     }
 
-    private final ClosedListener m_channelCloseListener = new ClosedListener()
+    private final ChannelListener m_channelCloseListener = new ChannelListener()
     {
         @Override
         public void channelClosed()
         {
             openChannel();
+        }
+
+        @Override
+        public void messageReceived(Message aMessage)
+        {
+            final ChatMessage msg = (ChatMessage)aMessage;
+            final String dateTimeString = DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT).format(
+                msg.getDate())
+                    + ' '
+                    + DateTimeFormat.getFormat(PredefinedFormat.TIME_MEDIUM).format(msg.getDate());
+            final String line = dateTimeString + " <" + msg.getRoom().getName() + ">" + " [" + msg.getUser().getName()
+                    + "]: " + msg.getMsg();
+            m_chatPanel.append(line);            
         }
     };
 
@@ -233,7 +250,7 @@ public class Synchrochat implements EntryPoint
             public void onSuccess(String aResult)
             {
                 m_channel = new Channel(aResult);
-                ChatChannelListener list = new ChatChannelListener(m_channel, m_chatPanel,
+                ChatChannelListener list = new ChatChannelListener(m_channel,
                         m_channelCloseListener);
                 m_channel.addChannelListener(list);
                 m_channel.join();

@@ -9,6 +9,7 @@ import java.util.TreeSet;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
+import com.progoth.synchrochat.client.events.ChatMessageReceivedEvent;
 import com.progoth.synchrochat.client.events.LoginResponseReceivedEvent;
 import com.progoth.synchrochat.client.events.RoomJoinedEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
@@ -16,6 +17,7 @@ import com.progoth.synchrochat.client.events.UserListDisplayEvent;
 import com.progoth.synchrochat.client.events.UserListReceivedEvent;
 import com.progoth.synchrochat.client.gui.controllers.RoomController;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
+import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 import com.progoth.synchrochat.shared.model.SynchroUser;
@@ -26,7 +28,7 @@ import com.sencha.gxt.widget.core.client.event.CloseEvent.CloseHandler;
 import com.sencha.gxt.widget.core.client.form.TextArea;
 
 public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
-        UserListReceivedEvent.Handler
+        UserListReceivedEvent.Handler, ChatMessageReceivedEvent.Handler
 {
     private final SortedMap<ChatRoom, ChatPanel> m_rooms = new TreeMap<ChatRoom, ChatPanel>();
     private final SortedMap<ChatRoom, SortedSet<SynchroUser>> m_userLists = new TreeMap<ChatRoom, SortedSet<SynchroUser>>();
@@ -72,6 +74,7 @@ public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
                 m_rooms.remove(room);
             }
         });
+
         addSelectionHandler(new SelectionHandler<Widget>()
         {
             @Override
@@ -92,12 +95,23 @@ public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
 
         SynchroBus.get().addHandler(RoomJoinedEvent.TYPE, this);
         SynchroBus.get().addHandler(UserListReceivedEvent.TYPE, this);
+        SynchroBus.get().addHandler(ChatMessageReceivedEvent.TYPE, this);
     }
 
     private void fireUserListEvent()
     {
         SynchroBus.get().fireEvent(
             new UserListDisplayEvent(m_userLists.get(m_selectedPanel.getRoom())));
+    }
+
+    @Override
+    public void messageReceived(final ChatMessage aMsg)
+    {
+        final ChatPanel room = m_rooms.get(aMsg.getRoom());
+        if (room != null)
+        {
+            room.addMessage(aMsg);
+        }
     }
 
     @Override

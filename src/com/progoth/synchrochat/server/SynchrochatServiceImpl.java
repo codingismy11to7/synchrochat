@@ -101,10 +101,11 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     @Override
     public void sendMsg(final ChatRoom aRoom, final String aMsg)
     {
-        final ChatMessage msg = new ChatMessage(aRoom.getName(), aMsg, getUser().getNickname());
-        for (final String user : RoomList.get().getSubscribedUsers(aRoom.getName()))
+        final SynchroUser user = SynchroSessions.get().getSession().getSynchroUser();
+        final ChatMessage msg = new ChatMessage(aRoom, aMsg, user);
+        for (final String userId : RoomList.get().getSubscribedUsers(aRoom.getName()))
         {
-            ChannelServer.send(user, msg);
+            ChannelServer.send(userId, msg);
         }
     }
 

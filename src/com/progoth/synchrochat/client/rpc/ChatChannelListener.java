@@ -4,26 +4,20 @@ import no.eirikb.gwtchannelapi.client.Channel;
 import no.eirikb.gwtchannelapi.client.ChannelListenerAdapter;
 import no.eirikb.gwtchannelapi.client.Message;
 
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
-import com.progoth.synchrochat.client.ChatPanel;
-import com.progoth.synchrochat.shared.model.ChatMessage;
-
 public class ChatChannelListener extends ChannelListenerAdapter
 {
-    public static interface ClosedListener
+    public static interface ChannelListener
     {
         void channelClosed();
+
+        void messageReceived(Message aMessage);
     }
 
-    private final ChatPanel m_chatPanel;
     private final Channel m_channel;
-    private final ClosedListener m_listener;
+    private final ChannelListener m_listener;
 
-    public ChatChannelListener(final Channel aChannel, final ChatPanel aPanel,
-            final ClosedListener aListener)
+    public ChatChannelListener(final Channel aChannel, final ChannelListener aListener)
     {
-        m_chatPanel = aPanel;
         m_channel = aChannel;
         m_listener = aListener;
     }
@@ -38,13 +32,6 @@ public class ChatChannelListener extends ChannelListenerAdapter
     @Override
     public void onReceive(final Message aMessage)
     {
-        final ChatMessage msg = (ChatMessage)aMessage;
-        final String dateTimeString = DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT).format(
-            msg.getDate())
-                + ' '
-                + DateTimeFormat.getFormat(PredefinedFormat.TIME_MEDIUM).format(msg.getDate());
-        final String line = dateTimeString + " <" + msg.getRoom() + ">" + " [" + msg.getUser()
-                + "]: " + msg.getMsg();
-        m_chatPanel.append(line);
+        m_listener.messageReceived(aMessage);
     }
 }
