@@ -17,6 +17,8 @@ public interface SynchrochatServiceAsync
 
     void greetServer(String requestUri, AsyncCallback<LoginResponse> callback);
 
+    void leaveRoom(ChatRoom aRoom, AsyncCallback<SortedSet<ChatRoom>> callback);
+
     void logout(AsyncCallback<Void> callback);
 
     void openChannel(AsyncCallback<String> callback);

@@ -4,6 +4,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.progoth.synchrochat.client.events.NewRoomInputEvent;
 import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
@@ -16,7 +18,6 @@ import com.progoth.synchrochat.client.rpc.SynchroRpc;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.Pair;
 import com.progoth.synchrochat.shared.model.SynchroUser;
-import com.sencha.gxt.widget.core.client.info.Info;
 
 public class RoomController implements NewRoomInputEvent.Handler, RoomJoinRequestEvent.Handler
 {
@@ -47,6 +48,16 @@ public class RoomController implements NewRoomInputEvent.Handler, RoomJoinReques
     {
         SynchroBus.get().addHandler(NewRoomInputEvent.TYPE, this);
         SynchroBus.get().addHandler(RoomJoinRequestEvent.TYPE, this);
+
+        Scheduler.get().scheduleFixedDelay(new RepeatingCommand()
+        {
+            @Override
+            public boolean execute()
+            {
+                getRoomList();
+                return true;
+            }
+        }, 30 * 1000);
     }
 
     public void getRoomList()
@@ -56,7 +67,7 @@ public class RoomController implements NewRoomInputEvent.Handler, RoomJoinReques
 
     public void leaveRoom(final ChatRoom aRoom)
     {
-        Info.display("leave room", "implement me " + aRoom.getName());
+        SynchroRpc.get().leaveRoom(aRoom, m_roomsRcvdHandler);
     }
 
     @Override

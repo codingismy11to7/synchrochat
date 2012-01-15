@@ -3,6 +3,7 @@ package com.progoth.synchrochat.server;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -78,7 +79,10 @@ public class SynchroSessions implements Serializable
         final RoomList rl = RoomList.get();
         rl.addUserToRoom(aRoom.getName(), session.getUser().getUserId());
 
-        session.getRoomList().add(aRoom);
+        synchronized (session.getRoomList())
+        {
+            session.getRoomList().add(aRoom);
+        }
         persist();
 
         return rl;
@@ -112,6 +116,11 @@ public class SynchroSessions implements Serializable
         return m_sessions.get(aUserId);
     }
 
+    public Set<String> getSessionIds()
+    {
+        return m_sessions.keySet();
+    }
+
     @SuppressWarnings("unused")
     private Map<String, ClientSession> getSessions()
     {
@@ -131,6 +140,22 @@ public class SynchroSessions implements Serializable
         {
             pm.close();
         }
+    }
+
+    public RoomList removeUserFromRoom(final ChatRoom aRoom)
+    {
+        final ClientSession session = getSession();
+
+        final RoomList rl = RoomList.get();
+        rl.removeUserFromRoom(aRoom.getName(), session.getUser().getUserId());
+
+        synchronized (session.getRoomList())
+        {
+            session.getRoomList().remove(aRoom);
+        }
+        persist();
+
+        return rl;
     }
 
     @SuppressWarnings("unused")

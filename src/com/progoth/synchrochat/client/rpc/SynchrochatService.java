@@ -19,6 +19,8 @@ public interface SynchrochatService extends RemoteService
 
     LoginResponse greetServer(String requestUri) throws IllegalArgumentException;
 
+    SortedSet<ChatRoom> leaveRoom(ChatRoom aRoom);
+
     void logout();
 
     String openChannel();

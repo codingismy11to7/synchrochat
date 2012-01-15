@@ -18,7 +18,9 @@ import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 import com.progoth.synchrochat.shared.model.Pair;
+import com.progoth.synchrochat.shared.model.RoomListUpdateMessage;
 import com.progoth.synchrochat.shared.model.SynchroUser;
+import com.progoth.synchrochat.shared.model.UserListUpdateMessage;
 
 /**
  * The server side implementation of the RPC service.
@@ -39,9 +41,9 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
         return userService.getCurrentUser();
     }
 
-    private SortedSet<SynchroUser> getUserList(final ChatRoom aRoom)
+    private SortedSet<SynchroUser> getUserList(final ChatRoom aRoom, final RoomList aRoomList)
     {
-        final Set<String> users = RoomList.get().getSubscribedUsers(aRoom.getName());
+        final Set<String> users = aRoomList.getSubscribedUsers(aRoom.getName());
         final SortedSet<SynchroUser> ret = Sets.newTreeSet();
         for (final String userId : users)
         {
@@ -86,8 +88,29 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     }
 
     @Override
+    public SortedSet<ChatRoom> leaveRoom(final ChatRoom aRoom)
+    {
+        final RoomList rl = SynchroSessions.get().removeUserFromRoom(aRoom);
+
+        final SortedSet<SynchroUser> userList = getUserList(aRoom, rl);
+
+        pushUserListUpdateMessage(aRoom, userList, rl);
+
+        return rl.getRooms();
+    }
+
+    @Override
     public void logout()
     {
+        final ClientSession session = SynchroSessions.get().getSession();
+        synchronized (session.getRoomList())
+        {
+            for (final ChatRoom room : session.getRoomList())
+            {
+                leaveRoom(room);
+            }
+        }
+
         SynchroSessions.get().endSession();
     }
 
@@ -96,6 +119,25 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     {
         final User user = getUser();
         return ChannelServiceFactory.getChannelService().createChannel(user.getUserId());
+    }
+
+    private void pushRoomListUpdateMessage(final SortedSet<ChatRoom> aRoomList)
+    {
+        final RoomListUpdateMessage msg = new RoomListUpdateMessage(aRoomList);
+        for (final String userId : SynchroSessions.get().getSessionIds())
+        {
+            ChannelServer.send(userId, msg);
+        }
+    }
+
+    private void pushUserListUpdateMessage(final ChatRoom aRoom,
+            final SortedSet<SynchroUser> aUserList, final RoomList aRoomList)
+    {
+        final UserListUpdateMessage msg = new UserListUpdateMessage(aRoom, aUserList);
+        for (final String userId : aRoomList.getSubscribedUsers(aRoom.getName()))
+        {
+            ChannelServer.send(userId, msg);
+        }
     }
 
     @Override
@@ -114,7 +156,12 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     {
         final RoomList rl = SynchroSessions.get().addUserToRoom(aRoom);
 
-        return new Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>>(rl.getRooms(),
-                getUserList(aRoom));
+        final SortedSet<SynchroUser> userList = getUserList(aRoom, rl);
+        final SortedSet<ChatRoom> roomList = rl.getRooms();
+
+        pushUserListUpdateMessage(aRoom, userList, rl);
+        pushRoomListUpdateMessage(roomList);
+
+        return new Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>>(roomList, userList);
     }
 }
