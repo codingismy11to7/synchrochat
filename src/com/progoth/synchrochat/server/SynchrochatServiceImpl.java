@@ -28,6 +28,10 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
 {
     private static final long serialVersionUID = 8471232977034188023L;
 
+    private static final Set<String> sm_allowedEmails = Sets.newHashSet("progoth@gmail.com",
+        "subsystem@gmail.com", "joshua.andrew.guy@gmail.com", "angela.froning@gmail.com",
+        "sung.whang@gmail.com", "steven@codemettle.com");
+
     @Override
     public SortedSet<ChatRoom> getRoomList()
     {
@@ -62,6 +66,11 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
         {
             resp.setLoggedIn(false);
             resp.setLoginUrl(userService.createLoginURL(requestUri));
+        }
+        else if (!sm_allowedEmails.contains(user.getEmail()))
+        {
+            resp.setLoggedIn(false);
+            resp.setLoginUrl("https://github.com/codingismy11to7/synchrochat");
         }
         else
         {
