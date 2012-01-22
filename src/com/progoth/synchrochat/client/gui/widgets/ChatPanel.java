@@ -1,10 +1,15 @@
 package com.progoth.synchrochat.client.gui.widgets;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
+import com.progoth.synchrochat.client.gui.widgets.SynchroHtmlEditor.EditSendHandler;
 import com.progoth.synchrochat.client.rpc.ReallyDontCareCallback;
 import com.progoth.synchrochat.client.rpc.SynchroRpc;
 import com.progoth.synchrochat.shared.model.ChatMessage;
@@ -19,13 +24,22 @@ import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer.HBoxLayou
 import com.sencha.gxt.widget.core.client.container.MarginData;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
-import com.sencha.gxt.widget.core.client.form.HtmlEditor;
 import com.sencha.gxt.widget.core.client.form.TextArea;
 
 public class ChatPanel extends BorderLayoutContainer
 {
     private final ChatRoom m_room;
     private TextArea m_output;
+    private final ScheduledCommand sm_scrollCommand = new ScheduledCommand()
+    {
+        @Override
+        public void execute()
+        {
+            Element area = m_output.getElement().getFirstChildElement().getFirstChildElement();
+            area.setScrollTop(area.getScrollHeight());
+//                .setScrollTop(m_output.getElement().getFirstChildElement().getScrollHeight());
+        }
+    };
 
     public ChatPanel(final ChatRoom aRoom)
     {
@@ -42,12 +56,15 @@ public class ChatPanel extends BorderLayoutContainer
                 + DateTimeFormat.getFormat(PredefinedFormat.TIME_MEDIUM).format(aMessage.getDate());
         final String line = dateTimeString + " [" + aMessage.getUser().getName() + "]: "
                 + aMessage.getMsg() + '\n';
-        m_output.setText(m_output.getText() + line);
+        final String newText = m_output.getText() + line;
+        m_output.setText(newText);
+        m_output.setCursorPos(newText.length());
+        Scheduler.get().scheduleDeferred(sm_scrollCommand);
     }
 
     private void createBottom()
     {
-        final HtmlEditor input = new HtmlEditor();
+        final SynchroHtmlEditor input = new SynchroHtmlEditor();
 
         final BorderLayoutData bld = new BorderLayoutData(100);
         bld.setMargins(new Margins(5, 0, 0, 0));
@@ -55,7 +72,7 @@ public class ChatPanel extends BorderLayoutContainer
         bld.setSplit(true);
         bld.setMinSize(65);
 
-        final TextButton send = new TextButton("Send", new SelectHandler()
+        final SelectHandler clickHandler = new SelectHandler()
         {
             @Override
             public void onSelect(final SelectEvent aEvent)
@@ -64,9 +81,19 @@ public class ChatPanel extends BorderLayoutContainer
                     new ReallyDontCareCallback<Void>());
                 input.setValue(null);
             }
-        });
+        };
+        final TextButton send = new TextButton("Send", clickHandler);
         send.setIcon(SynchroImages.get().font_go());
         send.setIconAlign(IconAlign.TOP);
+
+        input.addListener(new EditSendHandler()
+        {
+            @Override
+            public void onSendRequested(final SynchroHtmlEditor aSource)
+            {
+                clickHandler.onSelect(null);
+            }
+        });
 
         final HBoxLayoutContainer horiz = new HBoxLayoutContainer(HBoxLayoutAlign.TOP);
         final BoxLayoutData flex = new BoxLayoutData(new Margins());
@@ -90,6 +117,7 @@ public class ChatPanel extends BorderLayoutContainer
     private void createCenter()
     {
         m_output = new TextArea();
+        m_output.setReadOnly(true);
         // m_output.setText("lorem ipsum");
 
         setCenterWidget(m_output, new MarginData(new Margins()));
