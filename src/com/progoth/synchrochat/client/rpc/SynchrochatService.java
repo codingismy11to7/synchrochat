@@ -23,7 +23,7 @@ public interface SynchrochatService extends RemoteService
 
     void logout();
 
-    String openChannel();
+    String openChannel(boolean aForce);
 
     void sendMsg(ChatRoom channel, String msg);
 

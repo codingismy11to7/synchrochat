@@ -28,9 +28,9 @@ public class ChannelController
     private final ChannelListener m_channelCloseListener = new ChannelListener()
     {
         @Override
-        public void channelClosed()
+        public void channelClosed(final boolean aError)
         {
-            openChannel();
+            openChannel(aError);
         }
 
         @Override
@@ -64,12 +64,12 @@ public class ChannelController
     private ChannelController()
     {
         // singleton
-        openChannel();
+        openChannel(false);
     }
 
-    private void openChannel()
+    private void openChannel(final boolean aForce)
     {
-        SynchroRpc.get().openChannel(new SimpleAsyncCallback<String>()
+        SynchroRpc.get().openChannel(aForce, new SimpleAsyncCallback<String>()
         {
             @Override
             public void onSuccess(final String aResult)
@@ -81,5 +81,10 @@ public class ChannelController
                 m_channel.join();
             }
         });
+    }
+
+    public void stopListening()
+    {
+        m_channel.removeAllListeners();
     }
 }

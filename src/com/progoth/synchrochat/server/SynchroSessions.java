@@ -65,7 +65,8 @@ public class SynchroSessions implements Serializable
             }
             else
             {
-                sessions.index();
+                sessions.getSessionMap();
+                pm.makePersistent(sessions);
             }
             return pm.detachCopy(sessions);
         }
@@ -82,7 +83,7 @@ public class SynchroSessions implements Serializable
     private List<ClientSession> m_sessionList = Lists.newLinkedList();
 
     @NotPersistent
-    private final Map<String, ClientSession> m_sessionMap = Maps.newTreeMap();
+    private Map<User, ClientSession> m_sessionMap = null;
 
     public RoomList addUserToRoom(final ChatRoom aRoom)
     {
@@ -100,7 +101,7 @@ public class SynchroSessions implements Serializable
 
         RoomList.get().removeUserFromRooms(user);
 
-        final ClientSession ret = m_sessionMap.get(user.getUserId());
+        final ClientSession ret = getSessionMap().get(user);
         /*
          * m_sessionList.remove(ret); persist();
          */
@@ -116,17 +117,37 @@ public class SynchroSessions implements Serializable
     public ClientSession getSession()
     {
         final User user = sm_userService.getCurrentUser();
-        return m_sessionMap.get(user.getUserId());
+        return getSessionMap().get(user);
     }
 
     public ClientSession getSession(final User aUser)
     {
-        return m_sessionMap.get(aUser.getUserId());
+        return getSessionMap().get(aUser);
     }
 
-    public Set<String> getSessionIds()
+    private synchronized Map<User, ClientSession> getSessionMap()
     {
-        return m_sessionMap.keySet();
+        if (m_sessionMap == null)
+        {
+            m_sessionMap = Maps.newHashMap();
+            final List<ClientSession> toRemove = Lists.newLinkedList();
+            for (final ClientSession sess : m_sessionList)
+            {
+                if (m_sessionMap.containsKey(sess.getUser()))
+                {
+                    toRemove.add(sess);
+                }
+                else
+                {
+                    m_sessionMap.put(sess.getUser(), sess);
+                }
+            }
+            if (!toRemove.isEmpty())
+            {
+                m_sessionList.removeAll(toRemove);
+            }
+        }
+        return m_sessionMap;
     }
 
     @SuppressWarnings("unused")
@@ -135,19 +156,16 @@ public class SynchroSessions implements Serializable
         return m_sessionList;
     }
 
-    private void index()
+    public Set<User> getSessionUsers()
     {
-        for (final ClientSession sess : m_sessionList)
-        {
-            m_sessionMap.put(sess.getUser().getUserId(), sess);
-        }
+        return getSessionMap().keySet();
     }
 
-    public String openChannel()
+    public String openChannel(final boolean aForce)
     {
         final ClientSession sess = getSession();
         final GregorianCalendar now = new GregorianCalendar();
-        if (sess.channelExpiration != null && sess.channelName != null)
+        if (!aForce && sess.channelExpiration != null && sess.channelName != null)
         {
             final GregorianCalendar tmp = new GregorianCalendar();
             tmp.setTime(sess.channelExpiration);
@@ -159,7 +177,7 @@ public class SynchroSessions implements Serializable
         now.add(Calendar.HOUR_OF_DAY, 2);
         sess.channelExpiration = now.getTime();
         sess.channelName = chanId;
-        persist();
+        persist();// Session(sess);
         return chanId;
     }
 
@@ -171,6 +189,21 @@ public class SynchroSessions implements Serializable
         try
         {
             pm.makePersistent(this);
+        }
+        finally
+        {
+            pm.close();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void persistSession(final ClientSession aSess)
+    {
+        SynchroCache.getCache().put(KEY, this);
+        final PersistenceManager pm = PMF.getEventualReads().getPersistenceManager();
+        try
+        {
+            pm.makePersistent(aSess);
         }
         finally
         {
@@ -200,14 +233,14 @@ public class SynchroSessions implements Serializable
         m_sessionList = aSessions;
     }
 
-    public ClientSession startSession()
+    public synchronized ClientSession startSession()
     {
         ClientSession ret;
         if ((ret = getSession()) != null)
             return ret;
         ret = new ClientSession();
         m_sessionList.add(ret);
-        m_sessionMap.put(ret.getUser().getUserId(), ret);
+        getSessionMap().put(ret.getUser(), ret);
         persist();
         return ret;
     }

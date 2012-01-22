@@ -111,17 +111,17 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     }
 
     @Override
-    public String openChannel()
+    public String openChannel(final boolean aForce)
     {
-        return SynchroSessions.get().openChannel();
+        return SynchroSessions.get().openChannel(aForce);
     }
 
     private void pushRoomListUpdateMessage(final SortedSet<ChatRoom> aRoomList)
     {
         final RoomListUpdateMessage msg = new RoomListUpdateMessage(aRoomList);
-        for (final String userId : SynchroSessions.get().getSessionIds())
+        for (final User user : SynchroSessions.get().getSessionUsers())
         {
-            ChannelServer.send(userId, msg);
+            ChannelServer.send(user.getUserId(), msg);
         }
     }
 

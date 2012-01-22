@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.progoth.synchrochat.client.events.NewRoomInputEvent;
 import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
+import com.progoth.synchrochat.client.gui.controllers.ChannelController;
 import com.progoth.synchrochat.client.gui.controllers.LoginController;
 import com.progoth.synchrochat.client.gui.controllers.RoomController;
 import com.progoth.synchrochat.client.gui.views.MainView;
@@ -19,7 +20,7 @@ public class SynchroChat implements EntryPoint, NewRoomInputEvent.Handler,
         RoomJoinRequestEvent.Handler
 {
     @Override
-    public void newRoomRequested(final String aRoomName, String aPassword)
+    public void newRoomRequested(final String aRoomName, final String aPassword)
     {
         // subscribe
         Info.display("Created Room", aRoomName + (aPassword != null ? "; pw: " + aPassword : ""));
@@ -44,6 +45,7 @@ public class SynchroChat implements EntryPoint, NewRoomInputEvent.Handler,
             @Override
             public void onWindowClosing(final ClosingEvent aEvent)
             {
+                ChannelController.get().stopListening();
                 LoginController.get().logout(false, false);
             }
         });

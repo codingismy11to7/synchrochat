@@ -21,7 +21,7 @@ public interface SynchrochatServiceAsync
 
     void logout(AsyncCallback<Void> callback);
 
-    void openChannel(AsyncCallback<String> callback);
+    void openChannel(boolean aForce, AsyncCallback<String> callback);
 
     void sendMsg(ChatRoom channel, String msg, AsyncCallback<Void> callback);
 

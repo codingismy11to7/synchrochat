@@ -8,7 +8,7 @@ public class ChatChannelListener extends ChannelListenerAdapter
 {
     public static interface ChannelListener
     {
-        void channelClosed();
+        void channelClosed(boolean aError);
 
         void messageReceived(Message aMessage);
     }
@@ -26,7 +26,7 @@ public class ChatChannelListener extends ChannelListenerAdapter
     public void onError(final Object aEvt)
     {
         m_channel.removeAllListeners();
-        m_listener.channelClosed();
+        m_listener.channelClosed(true);
     }
 
     @Override
