@@ -28,7 +28,14 @@ public class ChatRoom implements Comparable<ChatRoom>, Serializable
 
     public ChatRoom()
     {
-        this(null);
+        this((String)null);
+    }
+
+    private ChatRoom(final ChatRoom aToCopy)
+    {
+        m_name = aToCopy.m_name;
+        m_userCount = aToCopy.m_userCount;
+        m_passwordRequired = aToCopy.m_passwordRequired;
     }
 
     public ChatRoom(final String aRoomName)
@@ -41,6 +48,11 @@ public class ChatRoom implements Comparable<ChatRoom>, Serializable
     {
         this(aRoomName);
         setPassword(aPassword);
+    }
+
+    public ChatRoom clientSafe()
+    {
+        return new ChatRoom(this);
     }
 
     @Override

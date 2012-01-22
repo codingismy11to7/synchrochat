@@ -1,25 +1,41 @@
 package com.progoth.synchrochat.server;
 
 import java.io.Serializable;
-import java.util.SortedSet;
+import java.util.Date;
 
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.NotPersistent;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.common.collect.Sets;
-import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.SynchroUser;
 
+@PersistenceCapable
 public class ClientSession implements Serializable
 {
+    @NotPersistent
     private static final long serialVersionUID = -8860944605518060941L;
 
+    @NotPersistent
     private static final UserService sm_userService = UserServiceFactory.getUserService();
 
-    private SortedSet<ChatRoom> m_roomList = Sets.newTreeSet();
-
+    @Persistent
     private User m_user;
+    @Persistent(serialized = "true")
     private SynchroUser m_synchroUser;
+    @Persistent
+    Date channelExpiration = null;
+    @Persistent
+    String channelName = null;
+
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private Key m_key;
 
     public ClientSession()
     {
@@ -27,9 +43,9 @@ public class ClientSession implements Serializable
         m_synchroUser = new SynchroUser(m_user.getNickname());
     }
 
-    public SortedSet<ChatRoom> getRoomList()
+    public Key getKey()
     {
-        return m_roomList;
+        return m_key;
     }
 
     public SynchroUser getSynchroUser()
@@ -43,9 +59,9 @@ public class ClientSession implements Serializable
     }
 
     @SuppressWarnings("unused")
-    private void setRoomList(final SortedSet<ChatRoom> aRoomList)
+    private void setKey(final Key aKey)
     {
-        m_roomList = aRoomList;
+        m_key = aKey;
     }
 
     @SuppressWarnings("unused")

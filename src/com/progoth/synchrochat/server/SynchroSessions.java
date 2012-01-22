@@ -1,7 +1,9 @@
 package com.progoth.synchrochat.server;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,9 +14,12 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.google.appengine.api.channel.ChannelServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 
 @PersistenceCapable
@@ -30,7 +35,7 @@ public class SynchroSessions implements Serializable
     private static final UserService sm_userService = UserServiceFactory.getUserService();
 
     @NotPersistent
-    private static final String KEY = "SessionMap";
+    private static final String KEY = "SynchrochatSessions";
 
     public static SynchroSessions get()
     {
@@ -58,6 +63,10 @@ public class SynchroSessions implements Serializable
                 sessions = new SynchroSessions();
                 pm.makePersistent(sessions);
             }
+            else
+            {
+                sessions.index();
+            }
             return pm.detachCopy(sessions);
         }
         finally
@@ -69,21 +78,18 @@ public class SynchroSessions implements Serializable
     @PrimaryKey
     private String m_key = KEY;
 
-    @Persistent(serialized = "true")
-    private Map<String, ClientSession> m_sessions = new HashMap<String, ClientSession>();
+    @Persistent
+    private List<ClientSession> m_sessionList = Lists.newLinkedList();
+
+    @NotPersistent
+    private final Map<String, ClientSession> m_sessionMap = Maps.newTreeMap();
 
     public RoomList addUserToRoom(final ChatRoom aRoom)
     {
         final ClientSession session = getSession();
 
         final RoomList rl = RoomList.get();
-        rl.addUserToRoom(aRoom.getName(), session.getUser().getUserId());
-
-        synchronized (session.getRoomList())
-        {
-            session.getRoomList().add(aRoom);
-        }
-        persist();
+        rl.addUserToRoom(aRoom, session.getUser());
 
         return rl;
     }
@@ -92,10 +98,12 @@ public class SynchroSessions implements Serializable
     {
         final User user = sm_userService.getCurrentUser();
 
-        RoomList.get().removeUserFromRooms(user.getUserId());
+        RoomList.get().removeUserFromRooms(user);
 
-        final ClientSession ret = m_sessions.remove(user.getUserId());
-        persist();
+        final ClientSession ret = m_sessionMap.get(user.getUserId());
+        /*
+         * m_sessionList.remove(ret); persist();
+         */
         return ret;
     }
 
@@ -108,23 +116,51 @@ public class SynchroSessions implements Serializable
     public ClientSession getSession()
     {
         final User user = sm_userService.getCurrentUser();
-        return m_sessions.get(user.getUserId());
+        return m_sessionMap.get(user.getUserId());
     }
 
-    public ClientSession getSession(final String aUserId)
+    public ClientSession getSession(final User aUser)
     {
-        return m_sessions.get(aUserId);
+        return m_sessionMap.get(aUser.getUserId());
     }
 
     public Set<String> getSessionIds()
     {
-        return m_sessions.keySet();
+        return m_sessionMap.keySet();
     }
 
     @SuppressWarnings("unused")
-    private Map<String, ClientSession> getSessions()
+    private List<ClientSession> getSessions()
     {
-        return m_sessions;
+        return m_sessionList;
+    }
+
+    private void index()
+    {
+        for (final ClientSession sess : m_sessionList)
+        {
+            m_sessionMap.put(sess.getUser().getUserId(), sess);
+        }
+    }
+
+    public String openChannel()
+    {
+        final ClientSession sess = getSession();
+        final GregorianCalendar now = new GregorianCalendar();
+        if (sess.channelExpiration != null && sess.channelName != null)
+        {
+            final GregorianCalendar tmp = new GregorianCalendar();
+            tmp.setTime(sess.channelExpiration);
+            if (tmp.after(now))
+                return sess.channelName;
+        }
+        final String chanId = ChannelServiceFactory.getChannelService().createChannel(
+            sess.getUser().getUserId());
+        now.add(Calendar.HOUR_OF_DAY, 2);
+        sess.channelExpiration = now.getTime();
+        sess.channelName = chanId;
+        persist();
+        return chanId;
     }
 
     private void persist()
@@ -147,13 +183,7 @@ public class SynchroSessions implements Serializable
         final ClientSession session = getSession();
 
         final RoomList rl = RoomList.get();
-        rl.removeUserFromRoom(aRoom.getName(), session.getUser().getUserId());
-
-        synchronized (session.getRoomList())
-        {
-            session.getRoomList().remove(aRoom);
-        }
-        persist();
+        rl.removeUserFromRoom(aRoom, session.getUser());
 
         return rl;
     }
@@ -165,15 +195,19 @@ public class SynchroSessions implements Serializable
     }
 
     @SuppressWarnings("unused")
-    private void setSessions(final Map<String, ClientSession> aSessions)
+    private void setSessions(final List<ClientSession> aSessions)
     {
-        m_sessions = aSessions;
+        m_sessionList = aSessions;
     }
 
     public ClientSession startSession()
     {
-        final ClientSession ret = new ClientSession();
-        m_sessions.put(ret.getUser().getUserId(), ret);
+        ClientSession ret;
+        if ((ret = getSession()) != null)
+            return ret;
+        ret = new ClientSession();
+        m_sessionList.add(ret);
+        m_sessionMap.put(ret.getUser().getUserId(), ret);
         persist();
         return ret;
     }

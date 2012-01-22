@@ -5,7 +5,6 @@ import java.util.SortedSet;
 
 import no.eirikb.gwtchannelapi.server.ChannelServer;
 
-import com.google.appengine.api.channel.ChannelServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -32,7 +31,7 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     @Override
     public SortedSet<ChatRoom> getRoomList()
     {
-        return RoomList.get().getRooms();
+        return RoomList.get().getClientSafeRooms();
     }
 
     private User getUser()
@@ -43,11 +42,11 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
 
     private SortedSet<SynchroUser> getUserList(final ChatRoom aRoom, final RoomList aRoomList)
     {
-        final Set<String> users = aRoomList.getSubscribedUsers(aRoom.getName());
+        final Set<User> users = aRoomList.getSubscribedUsers(aRoom);
         final SortedSet<SynchroUser> ret = Sets.newTreeSet();
-        for (final String userId : users)
+        for (final User user : users)
         {
-            ret.add(SynchroSessions.get().getSession(userId).getSynchroUser());
+            ret.add(SynchroSessions.get().getSession(user).getSynchroUser());
         }
         return ret;
     }
@@ -96,19 +95,16 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
 
         pushUserListUpdateMessage(aRoom, userList, rl);
 
-        return rl.getRooms();
+        return rl.getClientSafeRooms();
     }
 
     @Override
     public void logout()
     {
-        final ClientSession session = SynchroSessions.get().getSession();
-        synchronized (session.getRoomList())
+        final User user = getUser();
+        for (final ChatRoom room : RoomList.get().getRoomsForUser(user))
         {
-            for (final ChatRoom room : session.getRoomList())
-            {
-                leaveRoom(room);
-            }
+            leaveRoom(room);
         }
 
         SynchroSessions.get().endSession();
@@ -117,8 +113,7 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     @Override
     public String openChannel()
     {
-        final User user = getUser();
-        return ChannelServiceFactory.getChannelService().createChannel(user.getUserId());
+        return SynchroSessions.get().openChannel();
     }
 
     private void pushRoomListUpdateMessage(final SortedSet<ChatRoom> aRoomList)
@@ -133,21 +128,21 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     private void pushUserListUpdateMessage(final ChatRoom aRoom,
             final SortedSet<SynchroUser> aUserList, final RoomList aRoomList)
     {
-        final UserListUpdateMessage msg = new UserListUpdateMessage(aRoom, aUserList);
-        for (final String userId : aRoomList.getSubscribedUsers(aRoom.getName()))
+        final UserListUpdateMessage msg = new UserListUpdateMessage(aRoom.clientSafe(), aUserList);
+        for (final User user : aRoomList.getSubscribedUsers(aRoom))
         {
-            ChannelServer.send(userId, msg);
+            ChannelServer.send(user.getUserId(), msg);
         }
     }
 
     @Override
     public void sendMsg(final ChatRoom aRoom, final String aMsg)
     {
-        final SynchroUser user = SynchroSessions.get().getSession().getSynchroUser();
-        final ChatMessage msg = new ChatMessage(aRoom, aMsg, user);
-        for (final String userId : RoomList.get().getSubscribedUsers(aRoom.getName()))
+        final SynchroUser synchrouser = SynchroSessions.get().getSession().getSynchroUser();
+        final ChatMessage msg = new ChatMessage(aRoom.clientSafe(), aMsg, synchrouser);
+        for (final User user : RoomList.get().getSubscribedUsers(aRoom))
         {
-            ChannelServer.send(userId, msg);
+            ChannelServer.send(user.getUserId(), msg);
         }
     }
 
@@ -157,7 +152,7 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
         final RoomList rl = SynchroSessions.get().addUserToRoom(aRoom);
 
         final SortedSet<SynchroUser> userList = getUserList(aRoom, rl);
-        final SortedSet<ChatRoom> roomList = rl.getRooms();
+        final SortedSet<ChatRoom> roomList = rl.getClientSafeRooms();
 
         pushUserListUpdateMessage(aRoom, userList, rl);
         pushRoomListUpdateMessage(roomList);
