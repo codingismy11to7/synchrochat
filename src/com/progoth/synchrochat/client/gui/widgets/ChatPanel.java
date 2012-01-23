@@ -3,7 +3,6 @@ package com.progoth.synchrochat.client.gui.widgets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -37,7 +36,6 @@ public class ChatPanel extends BorderLayoutContainer
         {
             Element area = m_output.getElement().getFirstChildElement().getFirstChildElement();
             area.setScrollTop(area.getScrollHeight());
-//                .setScrollTop(m_output.getElement().getFirstChildElement().getScrollHeight());
         }
     };
 

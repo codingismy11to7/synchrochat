@@ -4,8 +4,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
-import com.progoth.synchrochat.client.events.LoginResponseReceivedEvent;
-import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.gui.controllers.LoginController;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.progoth.synchrochat.client.gui.widgets.MainTabPanel;
@@ -27,7 +25,7 @@ import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
 public class MainView extends ContentPanel
 {
-    public MainView()
+    public MainView(final LoginResponse aResponse)
     {
         monitorWindowResize = true;
         Window.enableScrolling(false);
@@ -40,11 +38,11 @@ public class MainView extends ContentPanel
         final BorderLayoutContainer cont = new BorderLayoutContainer();
         cont.setBorders(true);
 
-        createTop(cont);
+        createTop(cont, aResponse);
         createLeft(cont);
         createRight(cont);
 
-        cont.setCenterWidget(new MainTabPanel(), new MarginData());
+        cont.setCenterWidget(new MainTabPanel(aResponse), new MarginData());
 
         add(cont);
     }
@@ -75,7 +73,7 @@ public class MainView extends ContentPanel
         aContainer.setEastWidget(new PersonListPanel(), layout);
     }
 
-    private void createTop(final BorderLayoutContainer aContainer)
+    private void createTop(final BorderLayoutContainer aContainer, final LoginResponse aResponse)
     {
         final HBoxLayoutContainer north = new HBoxLayoutContainer(HBoxLayoutAlign.MIDDLE);
         north.setPadding(new Padding(5));
@@ -91,22 +89,11 @@ public class MainView extends ContentPanel
         });
         logoutMenuItem.setIcon(SynchroImages.get().disconnect());
         soMenu.add(logoutMenuItem);
-        final TextButton signOutButton = new TextButton("me");
+        final TextButton signOutButton = new TextButton(aResponse.getNickname());
         signOutButton.setIcon(SynchroImages.get().user_gray());
         signOutButton.setMenu(soMenu);
-        SynchroBus.get().addHandler(LoginResponseReceivedEvent.TYPE,
-            new LoginResponseReceivedEvent.Handler()
-            {
-                @Override
-                public void loginReceived(final LoginResponse aResponse)
-                {
-                    signOutButton.setText(aResponse.getNickname());
-                    north.forceLayout();
-                    signOutButton.redraw();
-                }
-            });
 
-        BoxLayoutData bld = new BoxLayoutData(new Margins());
+        final BoxLayoutData bld = new BoxLayoutData(new Margins());
         bld.setFlex(1);
         north.add(new Label(), bld);
         north.add(signOutButton, new BoxLayoutData(new Margins(0, 5, 0, 0)));

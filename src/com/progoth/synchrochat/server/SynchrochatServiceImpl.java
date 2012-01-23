@@ -58,16 +58,16 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     @Override
     public LoginResponse greetServer(final String requestUri) throws IllegalArgumentException
     {
-        final User user = getUser();
         final UserService userService = UserServiceFactory.getUserService();
+        final User user = userService.getCurrentUser();
 
         final LoginResponse resp = new LoginResponse();
-        if (user == null)
+        if (!userService.isUserLoggedIn())
         {
             resp.setLoggedIn(false);
             resp.setLoginUrl(userService.createLoginURL(requestUri));
         }
-        else if (!sm_allowedEmails.contains(user.getEmail()))
+        else if (!userService.isUserAdmin() && !sm_allowedEmails.contains(user.getEmail()))
         {
             resp.setLoggedIn(false);
             resp.setLoginUrl("https://github.com/codingismy11to7/synchrochat");

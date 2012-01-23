@@ -10,7 +10,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.progoth.synchrochat.client.events.ChatMessageReceivedEvent;
-import com.progoth.synchrochat.client.events.LoginResponseReceivedEvent;
 import com.progoth.synchrochat.client.events.RoomJoinedEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.events.UserListDisplayEvent;
@@ -34,7 +33,7 @@ public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
     private final SortedMap<ChatRoom, SortedSet<SynchroUser>> m_userLists = new TreeMap<ChatRoom, SortedSet<SynchroUser>>();
     private ChatPanel m_selectedPanel = null;
 
-    public MainTabPanel()
+    public MainTabPanel(final LoginResponse aResponse)
     {
         setCloseContextMenu(true);
         setAnimScroll(true);
@@ -42,15 +41,7 @@ public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
 
         final TextArea overview = new TextArea();
         overview.setReadOnly(true);
-        SynchroBus.get().addHandler(LoginResponseReceivedEvent.TYPE,
-            new LoginResponseReceivedEvent.Handler()
-            {
-                @Override
-                public void loginReceived(final LoginResponse aResponse)
-                {
-                    overview.setText(aResponse.getMessage());
-                }
-            });
+        overview.setText(aResponse.getMessage());
 
         final TabItemConfig ovConf = new TabItemConfig("Overview", false);
         ovConf.setIcon(SynchroImages.get().information());

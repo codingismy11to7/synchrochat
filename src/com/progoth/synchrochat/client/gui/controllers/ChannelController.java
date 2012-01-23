@@ -64,7 +64,6 @@ public class ChannelController
     private ChannelController()
     {
         // singleton
-        openChannel(false);
     }
 
     private void openChannel(final boolean aForce)
@@ -83,8 +82,16 @@ public class ChannelController
         });
     }
 
+    public void start()
+    {
+        openChannel(false);
+    }
+
     public void stopListening()
     {
-        m_channel.removeAllListeners();
+        if (m_channel != null)
+        {
+            m_channel.removeAllListeners();
+        }
     }
 }
