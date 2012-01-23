@@ -6,12 +6,13 @@ import no.eirikb.gwtchannelapi.client.Message;
 
 public class ChatMessage implements Message
 {
-    private static final long serialVersionUID = 9187281495288225152L;
+    private static final long serialVersionUID = 283324113140069119L;
 
     private String m_msg;
     private ChatRoom m_room;
     private SynchroUser m_user;
     private Date m_date;
+    private Date m_previousMessageDate;
 
     public ChatMessage()
     {
@@ -36,6 +37,11 @@ public class ChatMessage implements Message
         return m_msg;
     }
 
+    public Date getPreviousMessageDate()
+    {
+        return m_previousMessageDate;
+    }
+
     public ChatRoom getRoom()
     {
         return m_room;
@@ -56,6 +62,11 @@ public class ChatMessage implements Message
     private void setMsg(final String aMsg)
     {
         m_msg = aMsg;
+    }
+
+    public void setPreviousMessageDate(final Date aPreviousMessageDate)
+    {
+        m_previousMessageDate = aPreviousMessageDate;
     }
 
     @SuppressWarnings("unused")

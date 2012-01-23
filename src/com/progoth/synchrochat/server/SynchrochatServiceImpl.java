@@ -149,6 +149,7 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     {
         final SynchroUser synchrouser = SynchroSessions.get().getSession().getSynchroUser();
         final ChatMessage msg = new ChatMessage(aRoom.clientSafe(), aMsg, synchrouser);
+        ChatCache.get().recordAndUpdateNewMessage(msg);
         for (final User user : RoomList.get().getSubscribedUsers(aRoom))
         {
             ChannelServer.send(user.getUserId(), msg);

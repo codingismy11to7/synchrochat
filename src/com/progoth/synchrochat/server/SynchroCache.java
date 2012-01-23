@@ -38,6 +38,11 @@ public class SynchroCache
         return sm_cache;
     }
 
+    public static void put(final String aKey, final Object aVal)
+    {
+        getCache().put(aKey, aVal);
+    }
+
     private SynchroCache()
     {
         // singleton
