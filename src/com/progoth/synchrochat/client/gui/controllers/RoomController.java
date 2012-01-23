@@ -8,7 +8,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.progoth.synchrochat.client.events.NewRoomInputEvent;
-import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
 import com.progoth.synchrochat.client.events.RoomJoinedEvent;
 import com.progoth.synchrochat.client.events.RoomListReceivedEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
@@ -19,7 +18,7 @@ import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.Pair;
 import com.progoth.synchrochat.shared.model.SynchroUser;
 
-public class RoomController implements NewRoomInputEvent.Handler, RoomJoinRequestEvent.Handler
+public class RoomController implements NewRoomInputEvent.Handler
 {
     private static final RoomController sm_instance = new RoomController();
 
@@ -47,7 +46,6 @@ public class RoomController implements NewRoomInputEvent.Handler, RoomJoinReques
     private RoomController()
     {
         SynchroBus.get().addHandler(NewRoomInputEvent.TYPE, this);
-        SynchroBus.get().addHandler(RoomJoinRequestEvent.TYPE, this);
 
         Scheduler.get().scheduleFixedDelay(new RepeatingCommand()
         {
@@ -86,11 +84,5 @@ public class RoomController implements NewRoomInputEvent.Handler, RoomJoinReques
                     SynchroBus.get().fireEvent(new UserListReceivedEvent(room, aResult.getB()));
                 }
             });
-    }
-
-    @Override
-    public void roomJoinRequest(final ChatRoom aRoom)
-    {
-        newRoomRequested(aRoom.getName(), null);
     }
 }

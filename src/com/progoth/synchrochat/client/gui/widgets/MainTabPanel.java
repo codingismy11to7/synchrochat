@@ -10,6 +10,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.progoth.synchrochat.client.events.ChatMessageReceivedEvent;
+import com.progoth.synchrochat.client.events.RoomJoinRequestEvent;
 import com.progoth.synchrochat.client.events.RoomJoinedEvent;
 import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.events.UserListDisplayEvent;
@@ -27,7 +28,8 @@ import com.sencha.gxt.widget.core.client.event.CloseEvent.CloseHandler;
 import com.sencha.gxt.widget.core.client.form.TextArea;
 
 public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
-        UserListReceivedEvent.Handler, ChatMessageReceivedEvent.Handler
+        UserListReceivedEvent.Handler, ChatMessageReceivedEvent.Handler,
+        RoomJoinRequestEvent.Handler
 {
     private final SortedMap<ChatRoom, ChatPanel> m_rooms = new TreeMap<ChatRoom, ChatPanel>();
     private final SortedMap<ChatRoom, SortedSet<SynchroUser>> m_userLists = new TreeMap<ChatRoom, SortedSet<SynchroUser>>();
@@ -87,6 +89,7 @@ public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
         SynchroBus.get().addHandler(RoomJoinedEvent.TYPE, this);
         SynchroBus.get().addHandler(UserListReceivedEvent.TYPE, this);
         SynchroBus.get().addHandler(ChatMessageReceivedEvent.TYPE, this);
+        SynchroBus.get().addHandler(RoomJoinRequestEvent.TYPE, this);
     }
 
     private void fireUserListEvent()
@@ -130,6 +133,19 @@ public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
         if (m_selectedPanel != null && m_selectedPanel.getRoom().equals(aRoom))
         {
             fireUserListEvent();
+        }
+    }
+
+    @Override
+    public void roomJoinRequest(final ChatRoom aRoom)
+    {
+        if (m_rooms.containsKey(aRoom))
+        {
+            setSelectedRoom(m_rooms.get(aRoom));
+        }
+        else
+        {
+            RoomController.get().newRoomRequested(aRoom.getName(), aRoom.getPassword());
         }
     }
 

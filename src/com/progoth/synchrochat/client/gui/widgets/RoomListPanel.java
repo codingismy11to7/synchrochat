@@ -61,7 +61,7 @@ public class RoomListPanel extends ContentPanel
         SynchroBus.get().addHandler(RoomListReceivedEvent.TYPE, new RoomListReceivedEvent.Handler()
         {
             @Override
-            public void onRoomListReceived(RoomListReceivedEvent aEvt)
+            public void onRoomListReceived(final RoomListReceivedEvent aEvt)
             {
                 m_rooms.clear();
                 m_rooms.addAll(aEvt.getRoomList());
@@ -167,7 +167,15 @@ public class RoomListPanel extends ContentPanel
                         }
                         else
                         {
-                            SynchroBus.get().fireEvent(new NewRoomInputEvent(roomName));
+                            if (m_rooms.findModel(new ChatRoom(roomName)) != null)
+                            {
+                                SynchroBus.get().fireEvent(
+                                    new RoomJoinRequestEvent(m_rooms.findModel(new ChatRoom(roomName))));
+                            }
+                            else
+                            {
+                                SynchroBus.get().fireEvent(new NewRoomInputEvent(roomName));
+                            }
                         }
                     }
                 }
@@ -193,7 +201,15 @@ public class RoomListPanel extends ContentPanel
                 final String pw = pwDialog.getTextFieldValue();
                 if (pw != null && !pw.isEmpty())
                 {
-                    SynchroBus.get().fireEvent(new NewRoomInputEvent(aRoomName, pw));
+                    if (m_rooms.findModel(new ChatRoom(aRoomName)) != null)
+                    {
+                        SynchroBus.get().fireEvent(
+                            new RoomJoinRequestEvent(new ChatRoom(aRoomName, pw)));
+                    }
+                    else
+                    {
+                        SynchroBus.get().fireEvent(new NewRoomInputEvent(aRoomName, pw));
+                    }
                 }
             }
         });
