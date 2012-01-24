@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.progoth.synchrochat.client.events.ChatMessageReceivedEvent;
 import com.progoth.synchrochat.client.events.NewRoomInputEvent;
 import com.progoth.synchrochat.client.events.RoomJoinedEvent;
 import com.progoth.synchrochat.client.events.RoomListReceivedEvent;
@@ -14,9 +15,9 @@ import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.events.UserListReceivedEvent;
 import com.progoth.synchrochat.client.rpc.SimpleAsyncCallback;
 import com.progoth.synchrochat.client.rpc.SynchroRpc;
+import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
-import com.progoth.synchrochat.shared.model.Pair;
-import com.progoth.synchrochat.shared.model.SynchroUser;
+import com.progoth.synchrochat.shared.model.RoomSubscribeResponse;
 
 public class RoomController implements NewRoomInputEvent.Handler
 {
@@ -72,16 +73,20 @@ public class RoomController implements NewRoomInputEvent.Handler
     public void newRoomRequested(final String aRoomName, final String aPassword)
     {
         SynchroRpc.get().subscribe(new ChatRoom(aRoomName, aPassword),
-            new SimpleAsyncCallback<Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>>>()
+            new SimpleAsyncCallback<RoomSubscribeResponse>()
             {
                 @Override
-                public void onSuccess(
-                        final Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>> aResult)
+                public void onSuccess(final RoomSubscribeResponse aResult)
                 {
-                    m_roomsRcvdHandler.onSuccess(aResult.getA());
+                    m_roomsRcvdHandler.onSuccess(aResult.getRoomList());
                     final ChatRoom room = m_currentRooms.get(aRoomName);
                     SynchroBus.get().fireEvent(new RoomJoinedEvent(room));
-                    SynchroBus.get().fireEvent(new UserListReceivedEvent(room, aResult.getB()));
+                    SynchroBus.get().fireEvent(
+                        new UserListReceivedEvent(room, aResult.getRoomUsers()));
+                    for (final ChatMessage msg : aResult.getRoomLog())
+                    {
+                        SynchroBus.get().fireEvent(new ChatMessageReceivedEvent(msg));
+                    }
                 }
             });
     }

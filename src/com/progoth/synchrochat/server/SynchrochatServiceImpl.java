@@ -16,8 +16,8 @@ import com.progoth.synchrochat.client.rpc.SynchrochatService;
 import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
-import com.progoth.synchrochat.shared.model.Pair;
 import com.progoth.synchrochat.shared.model.RoomListUpdateMessage;
+import com.progoth.synchrochat.shared.model.RoomSubscribeResponse;
 import com.progoth.synchrochat.shared.model.SynchroUser;
 import com.progoth.synchrochat.shared.model.UserListUpdateMessage;
 
@@ -157,7 +157,7 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     }
 
     @Override
-    public Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>> subscribe(final ChatRoom aRoom)
+    public RoomSubscribeResponse subscribe(final ChatRoom aRoom)
     {
         final RoomList rl = SynchroSessions.get().addUserToRoom(aRoom);
 
@@ -167,6 +167,6 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
         pushUserListUpdateMessage(aRoom, userList, rl);
         pushRoomListUpdateMessage(roomList);
 
-        return new Pair<SortedSet<ChatRoom>, SortedSet<SynchroUser>>(roomList, userList);
+        return new RoomSubscribeResponse(roomList, userList, ChatCache.get().getAllRoomMessages(aRoom));
     }
 }

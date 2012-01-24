@@ -33,6 +33,15 @@ public class ChatCache
         }
     }
 
+    public List<ChatMessage> getAllRoomMessages(final ChatRoom aRoom)
+    {
+        final SortedMap<Date, ChatMessage> map = getMapForRoom(aRoom);
+        synchronized (map)
+        {
+            return Lists.newArrayList(map.tailMap(new Date(0l)).values());
+        }
+    }
+
     public List<ChatMessage> getAllRoomMessagesAfter(final ChatMessage aLastMsg)
     {
         final Date searchDate = new Date(1 + aLastMsg.getDate().getTime());
@@ -60,6 +69,10 @@ public class ChatCache
             if (!map.isEmpty())
             {
                 final ChatMessage lastMsg = map.get(map.lastKey());
+                while (aMsg.getDate().compareTo(lastMsg.getDate()) <= 0)
+                {
+                    aMsg.setDate(new Date(1 + aMsg.getDate().getTime()));
+                }
                 aMsg.setPreviousMessageDate(lastMsg.getDate());
             }
             map.put(aMsg.getDate(), aMsg);

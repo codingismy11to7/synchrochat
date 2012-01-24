@@ -6,6 +6,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -43,7 +45,14 @@ public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
 
         final TextArea overview = new TextArea();
         overview.setReadOnly(true);
-        overview.setText(aResponse.getMessage());
+        Scheduler.get().scheduleDeferred(new ScheduledCommand()
+        {
+            @Override
+            public void execute()
+            {
+                overview.setText(aResponse.getMessage());
+            }
+        });
 
         final TabItemConfig ovConf = new TabItemConfig("Overview", false);
         ovConf.setIcon(SynchroImages.get().information());
@@ -153,5 +162,8 @@ public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
     {
         m_selectedPanel = aPanel;
         setWidget(m_selectedPanel);
+        focus();
+        m_selectedPanel.focus();
+        m_selectedPanel.getInput().focus();
     }
 }

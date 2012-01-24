@@ -177,7 +177,7 @@ public class SynchroSessions implements Serializable
         now.add(Calendar.HOUR_OF_DAY, 2);
         sess.channelExpiration = now.getTime();
         sess.channelName = chanId;
-        persist();// Session(sess);
+        persistSession(sess);
         return chanId;
     }
 
@@ -196,7 +196,6 @@ public class SynchroSessions implements Serializable
         }
     }
 
-    @SuppressWarnings("unused")
     private void persistSession(final ClientSession aSess)
     {
         SynchroCache.getCache().put(KEY, this);

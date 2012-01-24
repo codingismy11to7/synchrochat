@@ -52,8 +52,7 @@ public class ChatMessage implements Message
         return m_user;
     }
 
-    @SuppressWarnings("unused")
-    private void setDate(final Date aDate)
+    public void setDate(final Date aDate)
     {
         m_date = aDate;
     }

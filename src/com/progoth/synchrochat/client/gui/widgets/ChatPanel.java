@@ -1,5 +1,9 @@
 package com.progoth.synchrochat.client.gui.widgets;
 
+import java.util.Date;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
@@ -28,13 +32,17 @@ import com.sencha.gxt.widget.core.client.form.TextArea;
 public class ChatPanel extends BorderLayoutContainer
 {
     private final ChatRoom m_room;
+    private SynchroHtmlEditor m_input;
     private TextArea m_output;
+    private final SortedMap<Date, ChatMessage> m_msgMap = new TreeMap<Date, ChatMessage>();
+
     private final ScheduledCommand sm_scrollCommand = new ScheduledCommand()
     {
         @Override
         public void execute()
         {
-            Element area = m_output.getElement().getFirstChildElement().getFirstChildElement();
+            final Element area = m_output.getElement().getFirstChildElement()
+                .getFirstChildElement();
             area.setScrollTop(area.getScrollHeight());
         }
     };
@@ -48,13 +56,8 @@ public class ChatPanel extends BorderLayoutContainer
 
     public void addMessage(final ChatMessage aMessage)
     {
-        final String dateTimeString = DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT).format(
-            aMessage.getDate())
-                + ' '
-                + DateTimeFormat.getFormat(PredefinedFormat.TIME_MEDIUM).format(aMessage.getDate());
-        final String line = dateTimeString + " [" + aMessage.getUser().getName() + "]: "
-                + aMessage.getMsg() + '\n';
-        final String newText = m_output.getText() + line;
+        m_msgMap.put(aMessage.getDate(), aMessage);
+        final String newText = getText();
         m_output.setText(newText);
         m_output.setCursorPos(newText.length());
         Scheduler.get().scheduleDeferred(sm_scrollCommand);
@@ -62,7 +65,7 @@ public class ChatPanel extends BorderLayoutContainer
 
     private void createBottom()
     {
-        final SynchroHtmlEditor input = new SynchroHtmlEditor();
+        m_input = new SynchroHtmlEditor();
 
         final BorderLayoutData bld = new BorderLayoutData(100);
         bld.setMargins(new Margins(5, 0, 0, 0));
@@ -75,16 +78,16 @@ public class ChatPanel extends BorderLayoutContainer
             @Override
             public void onSelect(final SelectEvent aEvent)
             {
-                SynchroRpc.get().sendMsg(m_room, input.getValue(),
+                SynchroRpc.get().sendMsg(m_room, m_input.getValue(),
                     new ReallyDontCareCallback<Void>());
-                input.setValue(null);
+                m_input.setValue(null);
             }
         };
         final TextButton send = new TextButton("Send", clickHandler);
         send.setIcon(SynchroImages.get().font_go());
         send.setIconAlign(IconAlign.TOP);
 
-        input.addListener(new EditSendHandler()
+        m_input.addListener(new EditSendHandler()
         {
             @Override
             public void onSendRequested(final SynchroHtmlEditor aSource)
@@ -96,7 +99,7 @@ public class ChatPanel extends BorderLayoutContainer
         final HBoxLayoutContainer horiz = new HBoxLayoutContainer(HBoxLayoutAlign.TOP);
         final BoxLayoutData flex = new BoxLayoutData(new Margins());
         flex.setFlex(1);
-        horiz.add(input, flex);
+        horiz.add(m_input, flex);
         horiz.add(send, new BoxLayoutData(new Margins(0, 5, 0, 5)));
 
         horiz.addResizeHandler(new ResizeHandler()
@@ -121,8 +124,26 @@ public class ChatPanel extends BorderLayoutContainer
         setCenterWidget(m_output, new MarginData(new Margins()));
     }
 
+    public SynchroHtmlEditor getInput()
+    {
+        return m_input;
+    }
+
     public ChatRoom getRoom()
     {
         return m_room;
+    }
+
+    private String getText()
+    {
+        final StringBuilder box = new StringBuilder();
+        for (final ChatMessage e : m_msgMap.values())
+        {
+            box.append(DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT).format(e.getDate())
+                    + ' '
+                    + DateTimeFormat.getFormat(PredefinedFormat.TIME_MEDIUM).format(e.getDate()));
+            box.append(" [" + e.getUser().getName() + "]: " + e.getMsg() + '\n');
+        }
+        return box.toString();
     }
 }

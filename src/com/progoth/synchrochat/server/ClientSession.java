@@ -3,13 +3,13 @@ package com.progoth.synchrochat.server;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -34,13 +34,14 @@ public class ClientSession implements Serializable
     String channelName = null;
 
     @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    @Persistent
     private Key m_key;
 
     public ClientSession()
     {
         m_user = sm_userService.getCurrentUser();
         m_synchroUser = new SynchroUser(m_user.getNickname());
+        m_key = KeyFactory.createKey(ClientSession.class.getSimpleName(), m_user.getUserId());
     }
 
     public Key getKey()
