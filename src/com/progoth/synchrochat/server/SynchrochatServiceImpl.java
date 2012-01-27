@@ -83,6 +83,7 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
             // input = escapeHtml(input);
             // userAgent = escapeHtml(userAgent);
 
+            resp.setAdmin(userService.isUserAdmin());
             resp.setLoggedIn(true);
             resp.setLogoutUrl(userService.createLogoutURL(requestUri));
             resp.setEmailAddress(user.getEmail());

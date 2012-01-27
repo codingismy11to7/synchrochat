@@ -7,6 +7,7 @@ public class LoginResponse implements Serializable
     private static final long serialVersionUID = 3554843768477114287L;
 
     private boolean m_loggedIn = false;
+    private boolean m_admin = false;
     private String m_loginUrl;
     private String m_logoutUrl;
     private String m_emailAddress;
@@ -38,9 +39,19 @@ public class LoginResponse implements Serializable
         return m_nickname;
     }
 
+    public boolean isAdmin()
+    {
+        return m_admin;
+    }
+
     public boolean isLoggedIn()
     {
         return m_loggedIn;
+    }
+
+    public void setAdmin(final boolean aAdmin)
+    {
+        m_admin = aAdmin;
     }
 
     public void setEmailAddress(final String aEmailAddress)
