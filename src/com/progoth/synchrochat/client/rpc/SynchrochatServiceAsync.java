@@ -12,6 +12,8 @@ import com.progoth.synchrochat.shared.model.RoomSubscribeResponse;
  */
 public interface SynchrochatServiceAsync
 {
+    void clearCaches(AsyncCallback<Void> callback);
+
     void getRoomList(AsyncCallback<SortedSet<ChatRoom>> callback);
 
     void greetServer(String requestUri, AsyncCallback<LoginResponse> callback);

@@ -13,6 +13,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.progoth.synchrochat.client.rpc.SynchrochatService;
+import com.progoth.synchrochat.shared.AccessDeniedException;
 import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
@@ -31,6 +32,14 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     private static final Set<String> sm_allowedEmails = Sets.newHashSet("progoth@gmail.com",
         "subsystem@gmail.com", "joshua.andrew.guy@gmail.com", "angela.froning@gmail.com",
         "sung.whang@gmail.com", "steven@codemettle.com");
+
+    @Override
+    public void clearCaches() throws AccessDeniedException
+    {
+        if (!UserServiceFactory.getUserService().isUserAdmin())
+            throw new AccessDeniedException();
+        SynchroCache.getCache().clear();
+    }
 
     @Override
     public SortedSet<ChatRoom> getRoomList()

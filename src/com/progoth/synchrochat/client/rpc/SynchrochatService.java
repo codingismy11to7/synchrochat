@@ -4,6 +4,7 @@ import java.util.SortedSet;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.progoth.synchrochat.shared.AccessDeniedException;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 import com.progoth.synchrochat.shared.model.RoomSubscribeResponse;
@@ -14,6 +15,8 @@ import com.progoth.synchrochat.shared.model.RoomSubscribeResponse;
 @RemoteServiceRelativePath("synchrochat")
 public interface SynchrochatService extends RemoteService
 {
+    void clearCaches() throws AccessDeniedException;
+
     SortedSet<ChatRoom> getRoomList();
 
     LoginResponse greetServer(String requestUri) throws IllegalArgumentException;

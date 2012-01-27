@@ -9,6 +9,8 @@ import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.progoth.synchrochat.client.gui.widgets.MainTabPanel;
 import com.progoth.synchrochat.client.gui.widgets.PersonListPanel;
 import com.progoth.synchrochat.client.gui.widgets.RoomListPanel;
+import com.progoth.synchrochat.client.rpc.DontCareCallback;
+import com.progoth.synchrochat.client.rpc.SynchroRpc;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.core.client.util.Padding;
@@ -20,6 +22,8 @@ import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutD
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer.HBoxLayoutAlign;
 import com.sencha.gxt.widget.core.client.container.MarginData;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.menu.Menu;
 import com.sencha.gxt.widget.core.client.menu.MenuItem;
 
@@ -45,6 +49,21 @@ public class MainView extends ContentPanel
         cont.setCenterWidget(new MainTabPanel(aResponse), new MarginData());
 
         add(cont);
+    }
+
+    private void addClearCacheButton(final HBoxLayoutContainer north)
+    {
+        final TextButton clearCaches = new TextButton("Clear Caches");
+        clearCaches.addSelectHandler(new SelectHandler()
+        {
+            @Override
+            public void onSelect(final SelectEvent aEvent)
+            {
+                SynchroRpc.get().clearCaches(new DontCareCallback<Void>());
+            }
+        });
+
+        north.add(clearCaches, new BoxLayoutData(new Margins(0, 5, 0, 0)));
     }
 
     private void createLeft(final BorderLayoutContainer aContainer)
@@ -96,6 +115,12 @@ public class MainView extends ContentPanel
         final BoxLayoutData bld = new BoxLayoutData(new Margins());
         bld.setFlex(1);
         north.add(new Label(), bld);
+
+        if (aResponse.isAdmin())
+        {
+            addClearCacheButton(north);
+        }
+
         north.add(signOutButton, new BoxLayoutData(new Margins(0, 5, 0, 0)));
 
         final BorderLayoutData layout = new BorderLayoutData(32);
