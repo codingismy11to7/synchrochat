@@ -14,6 +14,8 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.progoth.synchrochat.client.rpc.SynchrochatService;
 import com.progoth.synchrochat.shared.AccessDeniedException;
+import com.progoth.synchrochat.shared.FieldVerifier;
+import com.progoth.synchrochat.shared.InvalidIdentifierException;
 import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
 import com.progoth.synchrochat.shared.model.LoginResponse;
@@ -167,8 +169,10 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
     }
 
     @Override
-    public RoomSubscribeResponse subscribe(final ChatRoom aRoom)
+    public RoomSubscribeResponse subscribe(final ChatRoom aRoom) throws InvalidIdentifierException
     {
+        if (!FieldVerifier.validChatRoomName(aRoom.getName()))
+            throw new InvalidIdentifierException("Invalid room name.");
         final RoomList rl = SynchroSessions.get().addUserToRoom(aRoom);
 
         final SortedSet<SynchroUser> userList = getUserList(aRoom, rl);
