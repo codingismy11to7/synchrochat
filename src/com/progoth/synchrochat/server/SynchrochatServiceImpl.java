@@ -167,6 +167,7 @@ public class SynchrochatServiceImpl extends RemoteServiceServlet implements Sync
         pushUserListUpdateMessage(aRoom, userList, rl);
         pushRoomListUpdateMessage(roomList);
 
-        return new RoomSubscribeResponse(roomList, userList, ChatCache.get().getAllRoomMessages(aRoom));
+        return new RoomSubscribeResponse(roomList, userList, ChatCache.get().getAllRoomMessages(
+            aRoom));
     }
 }
