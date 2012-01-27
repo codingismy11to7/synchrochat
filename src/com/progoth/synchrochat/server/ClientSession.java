@@ -3,6 +3,7 @@ package com.progoth.synchrochat.server;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -15,43 +16,78 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.progoth.synchrochat.shared.model.SynchroUser;
 
-@PersistenceCapable
+@PersistenceCapable(detachable = "true")
 public class ClientSession implements Serializable
 {
     @NotPersistent
-    private static final long serialVersionUID = -8860944605518060941L;
+    private static final long serialVersionUID = 4784985396241692237L;
 
     @NotPersistent
     private static final UserService sm_userService = UserServiceFactory.getUserService();
 
     @Persistent
     private User m_user;
-    @Persistent(serialized = "true")
-    private SynchroUser m_synchroUser;
     @Persistent
-    Date channelExpiration = null;
+    private String m_nick;
     @Persistent
-    String channelName = null;
+    private Date channelExpiration = null;
+    @Persistent
+    private String channelName = null;
 
     @PrimaryKey
-    @Persistent
-    private Key m_key;
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private Key key;
 
     public ClientSession()
     {
         m_user = sm_userService.getCurrentUser();
-        m_synchroUser = new SynchroUser(m_user.getNickname());
-        m_key = KeyFactory.createKey(ClientSession.class.getSimpleName(), m_user.getUserId());
+        m_nick = m_user.getNickname();
+        key = KeyFactory.createKey(ClientSession.class.getSimpleName(), m_user.getUserId());
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (!(obj instanceof ClientSession))
+            return false;
+        final ClientSession other = (ClientSession)obj;
+        if (m_user == null)
+        {
+            if (other.m_user != null)
+                return false;
+        }
+        else if (!m_user.equals(other.m_user))
+            return false;
+        return true;
+    }
+
+    public Date getChannelExpiration()
+    {
+        return channelExpiration;
+    }
+
+    public String getChannelName()
+    {
+        return channelName;
     }
 
     public Key getKey()
     {
-        return m_key;
+        return key;
+    }
+
+    public String getNickx()
+    {
+        return m_nick;
     }
 
     public SynchroUser getSynchroUser()
     {
-        return m_synchroUser;
+        return new SynchroUser(m_nick);
     }
 
     public User getUser()
@@ -59,16 +95,35 @@ public class ClientSession implements Serializable
         return m_user;
     }
 
-    @SuppressWarnings("unused")
-    private void setKey(final Key aKey)
+    @Override
+    public int hashCode()
     {
-        m_key = aKey;
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((m_user == null) ? 0 : m_user.hashCode());
+        return result;
+    }
+
+    public void setChannelExpiration(final Date aChannelExpiration)
+    {
+        channelExpiration = aChannelExpiration;
+    }
+
+    public void setChannelName(final String aChannelName)
+    {
+        channelName = aChannelName;
     }
 
     @SuppressWarnings("unused")
-    private void setSynchroUser(final SynchroUser aSynchroUser)
+    private void setKey(final Key aKey)
     {
-        m_synchroUser = aSynchroUser;
+        key = aKey;
+    }
+
+    @SuppressWarnings("unused")
+    private void setNick(final String aNick)
+    {
+        m_nick = aNick;
     }
 
     @SuppressWarnings("unused")
