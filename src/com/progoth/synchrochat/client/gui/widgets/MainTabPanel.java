@@ -18,6 +18,7 @@ import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.events.UserListDisplayEvent;
 import com.progoth.synchrochat.client.events.UserListReceivedEvent;
 import com.progoth.synchrochat.client.gui.controllers.RoomController;
+import com.progoth.synchrochat.client.gui.controllers.UrlController;
 import com.progoth.synchrochat.client.gui.resources.SynchroImages;
 import com.progoth.synchrochat.shared.model.ChatMessage;
 import com.progoth.synchrochat.shared.model.ChatRoom;
@@ -85,10 +86,12 @@ public class MainTabPanel extends TabPanel implements RoomJoinedEvent.Handler,
                 if (aEvent.getSelectedItem() instanceof ChatPanel)
                 {
                     m_selectedPanel = (ChatPanel)aEvent.getSelectedItem();
+                    UrlController.get().updateUrl(m_selectedPanel.getRoom());
                     fireUserListEvent();
                 }
                 else
                 {
+                    UrlController.get().updateUrl(null);
                     SynchroBus.get()
                         .fireEvent(new UserListDisplayEvent(new TreeSet<SynchroUser>()));
                 }

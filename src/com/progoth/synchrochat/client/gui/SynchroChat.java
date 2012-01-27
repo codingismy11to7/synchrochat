@@ -11,6 +11,7 @@ import com.progoth.synchrochat.client.events.SynchroBus;
 import com.progoth.synchrochat.client.gui.controllers.ChannelController;
 import com.progoth.synchrochat.client.gui.controllers.LoginController;
 import com.progoth.synchrochat.client.gui.controllers.RoomController;
+import com.progoth.synchrochat.client.gui.controllers.UrlController;
 import com.progoth.synchrochat.client.gui.views.MainView;
 import com.progoth.synchrochat.shared.model.LoginResponse;
 import com.sencha.gxt.widget.core.client.container.Viewport;
@@ -32,6 +33,8 @@ public class SynchroChat implements EntryPoint, LoginResponseReceivedEvent.Handl
 
             DOM.removeChild(RootPanel.getBodyElement(), DOM.getElementById("loading"));
             RootPanel.getBodyElement().getStyle().setBackgroundColor("white");
+
+            UrlController.get().startupAction();
         }
     }
 
