@@ -1,7 +1,0 @@
-indexes:
-
-#- kind: ClientSession
-#  ancestor: yes
-#  properties:
-#  - name: __key__
-#    direction: desc
