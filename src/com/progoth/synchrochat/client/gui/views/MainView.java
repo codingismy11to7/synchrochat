@@ -22,10 +22,10 @@ import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutD
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HBoxLayoutContainer.HBoxLayoutAlign;
 import com.sencha.gxt.widget.core.client.container.MarginData;
-import com.sencha.gxt.widget.core.client.event.SelectEvent;
-import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
+import com.sencha.gxt.widget.core.client.info.Info;
 import com.sencha.gxt.widget.core.client.menu.Menu;
 import com.sencha.gxt.widget.core.client.menu.MenuItem;
+import com.sencha.gxt.widget.core.client.menu.SeparatorMenuItem;
 
 public class MainView extends ContentPanel
 {
@@ -51,19 +51,42 @@ public class MainView extends ContentPanel
         add(cont);
     }
 
-    private void addClearCacheButton(final HBoxLayoutContainer north)
+    private MenuItem createAdminMenu()
     {
-        final TextButton clearCaches = new TextButton("Clear Caches");
-        clearCaches.addSelectHandler(new SelectHandler()
+        final MenuItem ret = new MenuItem("Admin");
+        final Menu adminMenu = new Menu();
+
+        ret.setSubMenu(adminMenu);
+
+        final MenuItem removeRoom = new MenuItem("Remove Room...", new SelectionHandler<MenuItem>()
         {
             @Override
-            public void onSelect(final SelectEvent aEvent)
+            public void onSelection(final SelectionEvent<MenuItem> aEvent)
+            {
+                Info.display("Remove Room", "to be implemented...");
+            }
+        });
+        removeRoom.setIcon(SynchroImages.get().comments_delete());
+        adminMenu.add(removeRoom);
+
+        final MenuItem debug = new MenuItem("Debug");
+        adminMenu.add(debug);
+
+        final Menu debugMenu = new Menu();
+
+        debug.setSubMenu(debugMenu);
+
+        final MenuItem clearCaches = new MenuItem("Clear Caches", new SelectionHandler<MenuItem>()
+        {
+            @Override
+            public void onSelection(final SelectionEvent<MenuItem> aEvent)
             {
                 SynchroRpc.get().clearCaches(new DontCareCallback<Void>());
             }
         });
+        debugMenu.add(clearCaches);
 
-        north.add(clearCaches, new BoxLayoutData(new Margins(0, 5, 0, 0)));
+        return ret;
     }
 
     private void createLeft(final BorderLayoutContainer aContainer)
@@ -98,6 +121,27 @@ public class MainView extends ContentPanel
         north.setPadding(new Padding(5));
 
         final Menu soMenu = new Menu();
+
+        if (aResponse.isAdmin())
+        {
+            soMenu.add(createAdminMenu());
+            soMenu.add(new SeparatorMenuItem());
+        }
+
+        final MenuItem settingsMenuItem = new MenuItem("Preferences",
+                new SelectionHandler<MenuItem>()
+                {
+                    @Override
+                    public void onSelection(final SelectionEvent<MenuItem> aEvent)
+                    {
+                        Info.display("Preferences", "to be implemented...");
+                    }
+                });
+        settingsMenuItem.setIcon(SynchroImages.get().cog_edit());
+        soMenu.add(settingsMenuItem);
+
+        soMenu.add(new SeparatorMenuItem());
+
         final MenuItem logoutMenuItem = new MenuItem("Sign Out", new SelectionHandler<MenuItem>()
         {
             @Override
@@ -108,6 +152,7 @@ public class MainView extends ContentPanel
         });
         logoutMenuItem.setIcon(SynchroImages.get().disconnect());
         soMenu.add(logoutMenuItem);
+
         final TextButton signOutButton = new TextButton(aResponse.getNickname());
         signOutButton.setIcon(SynchroImages.get().user_gray());
         signOutButton.setMenu(soMenu);
@@ -115,11 +160,6 @@ public class MainView extends ContentPanel
         final BoxLayoutData bld = new BoxLayoutData(new Margins());
         bld.setFlex(1);
         north.add(new Label(), bld);
-
-        if (aResponse.isAdmin())
-        {
-            addClearCacheButton(north);
-        }
 
         north.add(signOutButton, new BoxLayoutData(new Margins(0, 5, 0, 0)));
 

@@ -6,7 +6,9 @@ import com.google.gwt.resources.client.ImageResource;
 public interface ISynchroImages extends ClientBundle
 {
     ImageResource add();
+    ImageResource cog_edit();
     ImageResource comments();
+    ImageResource comments_delete();
     ImageResource disconnect();
     ImageResource door_out();
     ImageResource font_go();
